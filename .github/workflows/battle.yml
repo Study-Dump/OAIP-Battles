@@ -64,6 +64,23 @@ jobs:
             --team "$TEAM_B" --opponent "$TEAM_A" \
             --out "$RUNNER_TEMP/partial_b.json"
 
+      - name: Require tests from both teams
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          for name in ("partial_a.json", "partial_b.json"):
+              path = os.path.join(os.environ["RUNNER_TEMP"], name)
+              with open(path, encoding="utf-8") as f:
+                  data = json.load(f)
+              if data.get("total", 0) == 0:
+                  print(f"::error::Team {data.get('team')} has no tests from team {data.get('attacked_by')}")
+                  sys.exit(1)
+              print(f"team{data['team']}: {data['passed']}/{data['total']} tests from team{data['attacked_by']}")
+          PY
+
       - name: Merge results
         run: |
           python3 scripts/merge_results.py \
@@ -123,9 +140,8 @@ jobs:
           with open("site/history.json", "w", encoding="utf-8") as f:
               json.dump(history, f, indent=2, ensure_ascii=False)
 
-          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
-              f.write(f"BATTLE={entry['battle']}\n")
           PY
+          BATTLE="$(python3 -c 'import json; print(json.load(open("site/results.json"))["battle"])')"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add site/results.json site/history.json
