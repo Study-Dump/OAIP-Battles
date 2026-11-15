@@ -143,6 +143,83 @@
           "total": 2
         }
       ]
+    },
+    {
+      "id": "vs-1-5-20261115T163855273942Z",
+      "battle": "vs/1-5",
+      "timestamp": "2026-11-15T16:38:55.273942+00:00",
+      "winner": "1",
+      "teams": [
+        {
+          "team": "1",
+          "attacked_by": "5",
+          "tests": [
+            {
+              "skipped": false,
+              "input": "2000000000 2000000000\n",
+              "expected_output": "4000000000\n",
+              "time_sec": 0.0017,
+              "actual_output": "4000000000\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "05_big",
+              "path": "tests/team1/05_big"
+            },
+            {
+              "skipped": false,
+              "input": "2 3\n",
+              "expected_output": "5\n",
+              "time_sec": 0.0012,
+              "actual_output": "5\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "05_small",
+              "path": "tests/team1/05_small"
+            }
+          ],
+          "passed": 2,
+          "total": 2
+        },
+        {
+          "team": "5",
+          "attacked_by": "1",
+          "tests": [
+            {
+              "skipped": false,
+              "input": "-2000000000 -2000000000\n",
+              "expected_output": "-4000000000\n",
+              "time_sec": 0.0016,
+              "actual_output": "294967296\n",
+              "passed": false,
+              "reason": "output_mismatch",
+              "diff": {
+                "first_diff_line": 1,
+                "actual_line": "294967296",
+                "expected_line": "-4000000000"
+              },
+              "author": "1",
+              "name": "01_big",
+              "path": "tests/team5/01_big"
+            },
+            {
+              "skipped": false,
+              "input": "10 20\n",
+              "expected_output": "30\n",
+              "time_sec": 0.0011,
+              "actual_output": "30\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_small",
+              "path": "tests/team5/01_small"
+            }
+          ],
+          "passed": 1,
+          "total": 2
+        }
+      ]
     }
   ]
 }
