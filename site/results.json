@@ -1,68 +1,68 @@
 {
-  "id": "vs-1-2-20261114T195828110339Z",
-  "battle": "vs/1-2",
-  "timestamp": "2026-11-14T19:58:28.110339+00:00",
-  "winner": "2",
+  "id": "vs-3-4-20261115T163336717176Z",
+  "battle": "vs/3-4",
+  "timestamp": "2026-11-15T16:33:36.717176+00:00",
+  "winner": "4",
   "teams": [
     {
-      "team": "1",
-      "attacked_by": "2",
+      "team": "3",
+      "attacked_by": "4",
       "tests": [
         {
           "skipped": false,
-          "input": "2 3\n",
-          "expected_output": "5\n",
-          "time_sec": 0.0011,
-          "actual_output": "5\n",
+          "input": "6 7\n",
+          "expected_output": "42\n",
+          "time_sec": 0.0018,
+          "actual_output": "42\n",
           "passed": true,
           "reason": "ok",
-          "author": "2",
-          "name": "02_sum",
-          "path": "tests/team1/02_sum"
+          "author": "4",
+          "name": "04_mul",
+          "path": "tests/team3/04_mul"
         },
         {
           "skipped": false,
-          "input": "-4 1\n",
-          "expected_output": "-3\n",
-          "time_sec": 0.0009,
-          "actual_output": "-3\n",
+          "input": "-3 5\n",
+          "expected_output": "-15\n",
+          "time_sec": 0.0014,
+          "actual_output": "-15\n",
           "passed": true,
           "reason": "ok",
-          "author": "2",
-          "name": "02_sum_negative",
-          "path": "tests/team1/02_sum_negative"
+          "author": "4",
+          "name": "04_mul_negative",
+          "path": "tests/team3/04_mul_negative"
         }
       ],
       "passed": 2,
       "total": 2
     },
     {
-      "team": "2",
-      "attacked_by": "1",
+      "team": "4",
+      "attacked_by": "3",
       "tests": [
         {
           "skipped": false,
-          "input": "10 -20\n",
-          "expected_output": "-10\n",
-          "time_sec": 0.001,
-          "actual_output": "-10\n",
+          "input": "12 -4\n",
+          "expected_output": "-48\n",
+          "time_sec": 0.0017,
+          "actual_output": "-48\n",
           "passed": true,
           "reason": "ok",
-          "author": "1",
-          "name": "01_sum",
-          "path": "tests/team2/01_sum"
+          "author": "3",
+          "name": "03_mul",
+          "path": "tests/team4/03_mul"
         },
         {
           "skipped": false,
-          "input": "1000000000 1000000000\n",
-          "expected_output": "2000000000\n",
-          "time_sec": 0.0008,
-          "actual_output": "2000000000\n",
+          "input": "1000000 1000000\n",
+          "expected_output": "1000000000000\n",
+          "time_sec": 0.0012,
+          "actual_output": "1000000000000\n",
           "passed": true,
           "reason": "ok",
-          "author": "1",
-          "name": "01_sum_big",
-          "path": "tests/team2/01_sum_big"
+          "author": "3",
+          "name": "03_mul_big",
+          "path": "tests/team4/03_mul_big"
         }
       ],
       "passed": 2,
