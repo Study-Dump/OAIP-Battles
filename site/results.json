@@ -1,86 +1,81 @@
 {
-  "id": "vs-2-5-20261115T163911515712Z",
-  "battle": "vs/2-5",
-  "timestamp": "2026-11-15T16:39:11.515712+00:00",
-  "winner": "2",
+  "id": "vs-3-5-20261115T163930351237Z",
+  "battle": "vs/3-5",
+  "timestamp": "2026-11-15T16:39:30.351237+00:00",
+  "winner": "5",
   "teams": [
     {
-      "team": "2",
+      "team": "3",
       "attacked_by": "5",
       "tests": [
         {
           "skipped": false,
-          "input": "2000000000 2000000000\n",
-          "expected_output": "4000000000\n",
-          "time_sec": 0.0015,
-          "actual_output": "-294967296\n",
-          "passed": false,
-          "reason": "output_mismatch",
-          "diff": {
-            "first_diff_line": 1,
-            "actual_line": "-294967296",
-            "expected_line": "4000000000"
-          },
-          "author": "5",
-          "name": "05_big",
-          "path": "tests/team2/05_big"
-        },
-        {
-          "skipped": false,
-          "input": "4 6\n",
-          "expected_output": "10\n",
-          "time_sec": 0.0011,
-          "actual_output": "10\n",
-          "passed": true,
-          "reason": "ok",
-          "author": "5",
-          "name": "05_small",
-          "path": "tests/team2/05_small"
-        }
-      ],
-      "passed": 1,
-      "total": 2
-    },
-    {
-      "team": "5",
-      "attacked_by": "2",
-      "tests": [
-        {
-          "skipped": false,
-          "input": "2000000000 2000000000\n",
-          "expected_output": "4000000000\n",
-          "time_sec": 0.0016,
+          "input": "1500000000 1500000000\n",
+          "expected_output": "3000000000\n",
+          "time_sec": 0.0013,
           "actual_output": "0\n",
           "passed": false,
           "reason": "output_mismatch",
           "diff": {
             "first_diff_line": 1,
             "actual_line": "0",
-            "expected_line": "4000000000"
+            "expected_line": "3000000000"
           },
-          "author": "2",
-          "name": "02_big",
-          "path": "tests/team5/02_big"
+          "author": "5",
+          "name": "05_big",
+          "path": "tests/team3/05_big"
         },
         {
           "skipped": false,
-          "input": "7 8\n",
-          "expected_output": "15\n",
-          "time_sec": 0.0011,
-          "actual_output": "-1\n",
+          "input": "9 4\n",
+          "expected_output": "13\n",
+          "time_sec": 0.001,
+          "actual_output": "5\n",
           "passed": false,
           "reason": "output_mismatch",
           "diff": {
             "first_diff_line": 1,
-            "actual_line": "-1",
-            "expected_line": "15"
+            "actual_line": "5",
+            "expected_line": "13"
           },
-          "author": "2",
-          "name": "02_small",
-          "path": "tests/team5/02_small"
+          "author": "5",
+          "name": "05_small",
+          "path": "tests/team3/05_small"
         }
       ],
       "passed": 0,
+      "total": 2
+    },
+    {
+      "team": "5",
+      "attacked_by": "3",
+      "tests": [
+        {
+          "skipped": false,
+          "input": "100 200\n",
+          "expected_output": "300\n",
+          "time_sec": 0.0011,
+          "actual_output": "300\n",
+          "passed": true,
+          "reason": "ok",
+          "author": "3",
+          "name": "03_big",
+          "path": "tests/team5/03_big"
+        },
+        {
+          "skipped": false,
+          "input": "1 2\n",
+          "expected_output": "3\n",
+          "time_sec": 0.0009,
+          "actual_output": "3\n",
+          "passed": true,
+          "reason": "ok",
+          "author": "3",
+          "name": "03_small",
+          "path": "tests/team5/03_small"
+        }
+      ],
+      "passed": 2,
       "total": 2
     }
   ]
