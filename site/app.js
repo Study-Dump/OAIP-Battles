@@ -103,6 +103,27 @@ function attackEntries() {
   return Array.isArray(state.history.attacks) ? state.history.attacks : [];
 }
 
+function revisionEntries() {
+  const byTarget = new Map();
+  attackEntries().forEach((entry) => {
+    const target = String(entry.target || '');
+    if (!TEAMS.some((team) => String(team) === target)) return;
+    const list = byTarget.get(target) || [];
+    list.push(entry);
+    byTarget.set(target, list);
+  });
+
+  const revisions = [];
+  byTarget.forEach((list) => {
+    list.sort((a, b) => String(a.timestamp || '').localeCompare(String(b.timestamp || '')));
+    revisions.push(...list.slice(1));
+  });
+
+  return revisions.sort(
+    (a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || ''))
+  );
+}
+
 function latestEntries() {
   const latest = {};
   attackEntries().forEach((entry) => {
@@ -164,7 +185,7 @@ function renderSelector() {
     const entry = latestEntries()[target];
     const defense = entry.defense || {};
     const status = defense.held ? 'выстоял' : 'пробит';
-    return `<option value="${esc(target)}">attack-${esc(target)} · ${teamLabel(target)} · ${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</option>`;
+    return `<option value="${esc(target)}">${teamLabel(target)} · ${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</option>`;
   }).join('');
 
   els.select.value = state.selectedTarget ?? targets[targets.length - 1];
@@ -275,7 +296,7 @@ function renderDefense() {
 
   els.defense.innerHTML = `
     <div class="panel-head">
-      <h2>attack-${esc(target)} <span class="muted">${esc(teamLabel(target))}</span></h2>
+      <h2>${esc(teamLabel(target))}</h2>
       <p class="muted">${fmtDate(entry.timestamp)} · commit <code>${esc(String(entry.commit || '').slice(0, 7))}</code></p>
     </div>
 
@@ -285,13 +306,13 @@ function renderDefense() {
         <strong class="score"><b>${defense.passed ?? 0}</b><span>/${defense.total ?? 0}</span></strong>
         <span class="badge ${defense.held ? 'win' : ''}">${defense.held ? 'выстоял' : 'пробит'}</span>
       </article>
-      ${metric('Ревизии решения', entry.solution_rev ?? 0)}
-      ${metric('Сумма ревизий атак', attackRevs)}
+      ${metric('Ревизии решений', entry.solution_rev ?? 0)}
+      ${metric('Ревизии атак', attackRevs)}
       ${metric('Команд-атакующих', attackers.length)}
     </div>
 
     <div class="panel-head">
-      <h2>Атаки <span class="count">${attackers.length}</span></h2>
+      <h2>Атаки <span class="count">${defense.total ?? 0}</span></h2>
     </div>
     <div class="table-wrap">
       <table class="matrix attack-table">
@@ -353,7 +374,6 @@ function renderMatrix() {
   els.matrix.innerHTML = `
     <div class="panel-head">
       <h2>Краш-матрица</h2>
-      <p class="muted">Строка — защита, столбец — атака. Последняя ревизия каждой ветки.</p>
     </div>
     <div class="table-wrap">
       <table class="matrix">
@@ -370,20 +390,21 @@ function renderMatrix() {
       <li><span class="swatch good"></span> защита выдержала</li>
       <li><span class="swatch mid"></span> частично</li>
       <li><span class="swatch bad"></span> атака пробила</li>
-      <li><span class="swatch leader"></span> лидирующая группа</li>
-      <li>в ячейке: пройдено/всего и среднее время</li>
     </ul>
   `;
 }
 
 function renderHistory() {
-  const all = attackEntries();
+  const all = revisionEntries();
   if (!all.length) {
-    els.history.innerHTML = emptyState('История пуста', '');
+    els.history.innerHTML = emptyState(
+      'Ревизий пока нет',
+      'Показаны только обновления после первой версии защиты.'
+    );
     return;
   }
 
-  const rows = [...all].reverse().map((entry) => {
+  const rows = all.map((entry) => {
     const target = String(entry.target);
     const defense = entry.defense || {};
     const status = defense.held ? 'выстоял' : 'пробит';

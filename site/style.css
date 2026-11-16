@@ -784,11 +784,24 @@ tbody tr:hover th {
   color: #748aa8;
 }
 
-.matrix tr.leader-row > th,
-.matrix tr.leader-row > td,
-.matrix th.leader-col,
-.matrix td.leader-col {
-  background-image: linear-gradient(rgba(61, 139, 255, 0.055), rgba(61, 139, 255, 0.055));
+.matrix tr.leader-row > * {
+  box-shadow:
+    inset 0 1px 0 rgba(61, 139, 255, 0.38),
+    inset 0 -1px 0 rgba(61, 139, 255, 0.38);
+}
+
+.matrix .leader-col {
+  box-shadow:
+    inset 1px 0 0 rgba(61, 139, 255, 0.38),
+    inset -1px 0 0 rgba(61, 139, 255, 0.38);
+}
+
+.matrix tr.leader-row > .leader-col {
+  box-shadow:
+    inset 0 1px 0 rgba(61, 139, 255, 0.38),
+    inset 0 -1px 0 rgba(61, 139, 255, 0.38),
+    inset 1px 0 0 rgba(61, 139, 255, 0.38),
+    inset -1px 0 0 rgba(61, 139, 255, 0.38);
 }
 
 .matrix tr.leader-row > th,
@@ -836,10 +849,6 @@ tbody tr:hover th {
   box-shadow: 0 0 8px rgba(255, 77, 125, 0.5);
 }
 
-.swatch.leader {
-  background: rgba(61, 139, 255, 0.22);
-  box-shadow: inset 0 0 0 1px rgba(61, 139, 255, 0.45);
-}
 
 .history-list {
   border: 1px solid var(--border);
