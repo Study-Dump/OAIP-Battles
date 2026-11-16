@@ -27,8 +27,6 @@ jobs:
           python3 - <<'PY'
           import json
 
-          with open("site/results.json", "w", encoding="utf-8") as f:
-              json.dump({}, f, indent=2)
           with open("site/history.json", "w", encoding="utf-8") as f:
               json.dump({"attacks": []}, f, indent=2)
           with open("site/scoreboard.json", "w", encoding="utf-8") as f:
@@ -48,7 +46,7 @@ jobs:
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add site/results.json site/history.json site/scoreboard.json
+          git add site/history.json site/scoreboard.json
           if git diff --cached --quiet; then
             echo "History is already empty"
             exit 0
