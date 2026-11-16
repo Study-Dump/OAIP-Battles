@@ -64,16 +64,15 @@
 
 ## Сдача
 
-Подготовьте папку `67810X/`, где `X` — номер вашей группы.
+В корне ветки `attack-N`:
 
 ```text
-67810X/
-  solution.cpp
-  attacks/
-    teamK/
-      01_описание/
-        input.txt
-        expected_output.txt
+solution.cpp
+attacks/
+  teamK/
+    01_описание/
+      input.txt
+      expected_output.txt
 ```
 
 - `solution.cpp` — решение вашего варианта, строго с таким именем.
