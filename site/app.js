@@ -13,7 +13,6 @@ const REASON_LABELS = {
 };
 
 const state = {
-  scoreboard: null,
   history: { attacks: [] },
   selectedTarget: null,
 };
@@ -21,7 +20,6 @@ const state = {
 const els = {
   select: document.getElementById('battle-select'),
   defense: document.getElementById('panel-defense'),
-  standings: document.getElementById('panel-standings'),
   matrix: document.getElementById('panel-matrix'),
   history: document.getElementById('panel-history'),
   clear: document.getElementById('clear-btn'),
@@ -68,6 +66,14 @@ function fmtDate(ts) {
 
 function fmtMs(sec) {
   return Number.isFinite(sec) ? `${(sec * 1000).toFixed(sec < 1 ? 1 : 0)} мс` : '—';
+}
+
+function meanTime(tests) {
+  const values = (tests || [])
+    .map((test) => Number(test.time_sec))
+    .filter((value) => Number.isFinite(value));
+  if (!values.length) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function attackEntries() {
@@ -118,7 +124,6 @@ function emptyState(title, text, href) {
 function renderAll() {
   renderSelector();
   renderDefense();
-  renderStandings();
   renderMatrix();
   renderHistory();
 }
@@ -183,7 +188,7 @@ function renderFailure(test, target) {
     <details class="failure">
       <summary>
         <span class="failure-title"><span class="team-code">${esc(teamLabel(test.author))}</span> → ${esc(teamLabel(target))} · ${esc(test.name)}</span>
-        <span class="meta">${esc(reason)} · ${fmtMs(test.time_sec)}</span>
+        <span class="meta">${esc(reason)} · время ${fmtMs(test.time_sec)}</span>
       </summary>
       <div class="failure-body">
         ${diff}
@@ -235,6 +240,7 @@ function renderDefense() {
         <td>${passed}/${total}</td>
         <td class="${statusClass}">${failed}</td>
         <td>${attacker.revision ?? 0}</td>
+        <td class="time">${fmtMs(meanTime(attacker.tests))}</td>
         <td class="${statusClass}">${status}</td>
       </tr>
     `;
@@ -272,6 +278,7 @@ function renderDefense() {
             <th scope="col">Пройдено</th>
             <th scope="col">Провалено</th>
             <th scope="col">Ревизии</th>
+            <th scope="col">Ср. время</th>
             <th scope="col">Итог</th>
           </tr>
         </thead>
@@ -283,67 +290,6 @@ function renderDefense() {
       <h2>Провалы <span class="count">${failures.length}</span></h2>
     </div>
     <div class="failures">${failuresHtml}</div>
-  `;
-}
-
-function renderStandings() {
-  const board = state.scoreboard;
-  if (!board || !Array.isArray(board.teams) || !board.teams.length) {
-    els.standings.innerHTML = emptyState('Зачёт пуст', 'Нужны результаты защит.');
-    return;
-  }
-
-  const winner = board.winner ? String(board.winner) : null;
-  const latest = latestEntries();
-  const missing = TEAMS.filter((team) => !latest[String(team)]);
-  const note = board.complete
-    ? (winner ? `Победитель: ${teamLabel(winner)}` : 'Ничья по всем показателям')
-    : `Ожидаются защиты: ${missing.map((team) => `attack-${team}`).join(', ')}`;
-
-  const rows = board.teams.map((team) => {
-    const defense = team.defense || {};
-    const isWinner = winner === String(team.team);
-    const status = defense.total
-      ? (defense.held ? 'выстоял' : 'пробит')
-      : '—';
-    return `
-      <tr class="${isWinner ? 'winner-row' : ''}">
-        <th scope="row">${esc(teamLabel(team.team))} ${isWinner ? '<span class="badge win">победитель</span>' : ''}</th>
-        <td>${team.defense_points ?? 0}/${defense.total ?? 0}</td>
-        <td>${team.attack_points ?? 0}/${team.attack_total ?? 0}</td>
-        <td><strong>${team.total_points ?? 0}</strong></td>
-        <td>${team.solution_rev ?? 0}</td>
-        <td>${team.attack_revs ?? 0}</td>
-        <td>${status}</td>
-      </tr>
-    `;
-  }).join('');
-
-  els.standings.innerHTML = `
-    <div class="panel-head">
-      <h2>Зачёт</h2>
-      <p class="muted">${esc(note)}</p>
-    </div>
-    <div class="table-wrap">
-      <table class="matrix standings-table">
-        <thead>
-          <tr>
-            <th scope="col">Команда</th>
-            <th scope="col">Защита</th>
-            <th scope="col">Атака</th>
-            <th scope="col">Всего</th>
-            <th scope="col">Рев. решения</th>
-            <th scope="col">Рев. атак</th>
-            <th scope="col">Статус</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-    <ul class="legend">
-      <li>1 тест = 1 очко: прошёл — защите, упал — автору атаки.</li>
-      <li>Тай-брейк: больше «выстоял», меньше ревизий решения, больше ревизий атак.</li>
-    </ul>
   `;
 }
 
@@ -368,7 +314,8 @@ function renderMatrix() {
       }
       const ratio = attack.passed / attack.total;
       const cls = ratio >= 0.999 ? 'good' : ratio >= 0.5 ? 'mid' : 'bad';
-      rows += `<td class="cell ${cls}" title="Пройдено ${attack.passed} из ${attack.total}">${attack.passed}/${attack.total}</td>`;
+      const avg = fmtMs(meanTime(attack.tests));
+      rows += `<td class="cell ${cls}" title="Пройдено ${attack.passed} из ${attack.total}; среднее время ${avg}"><span class="cell-score">${attack.passed}/${attack.total}</span><span class="cell-time">${avg}</span></td>`;
     });
     rows += '</tr>';
   });
@@ -393,6 +340,7 @@ function renderMatrix() {
       <li><span class="swatch good"></span> защита выдержала</li>
       <li><span class="swatch mid"></span> частично</li>
       <li><span class="swatch bad"></span> атака пробила</li>
+      <li>в ячейке: пройдено/всего и среднее время</li>
     </ul>
   `;
 }
@@ -444,8 +392,7 @@ function setTab(name) {
 }
 
 async function load() {
-  const [scoreboard, historyData, repoData] = await Promise.all([
-    fetchJson('scoreboard.json', null),
+  const [historyData, repoData] = await Promise.all([
     fetchJson('history.json', { attacks: [] }),
     fetchJson('repo.json', null, true),
   ]);
@@ -456,7 +403,6 @@ async function load() {
     if (repoLink) repoLink.href = repoUrl();
   }
 
-  state.scoreboard = scoreboard;
   state.history = historyData && Array.isArray(historyData.attacks)
     ? historyData
     : { attacks: [] };
