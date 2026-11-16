@@ -36,8 +36,8 @@
 
   <div class="toolbar">
     <label class="battle-select">
-      <span>Баттл</span>
-      <select id="battle-select" aria-label="Выбор баттла">
+      <span>Защита</span>
+      <select id="battle-select" aria-label="Выбор защиты">
         <option>…</option>
       </select>
     </label>
@@ -45,13 +45,15 @@
   </div>
 
   <nav class="tabs" role="tablist" aria-label="Разделы">
-    <button type="button" role="tab" id="tab-battle" class="tab active" aria-selected="true" aria-controls="panel-battle" data-tab="battle">Баттл</button>
+    <button type="button" role="tab" id="tab-defense" class="tab active" aria-selected="true" aria-controls="panel-defense" data-tab="defense">Защита</button>
+    <button type="button" role="tab" id="tab-standings" class="tab" aria-selected="false" aria-controls="panel-standings" data-tab="standings">Зачёт</button>
     <button type="button" role="tab" id="tab-matrix" class="tab" aria-selected="false" aria-controls="panel-matrix" data-tab="matrix">Краш-матрица</button>
     <button type="button" role="tab" id="tab-history" class="tab" aria-selected="false" aria-controls="panel-history" data-tab="history">История</button>
   </nav>
 
   <main id="main">
-    <section id="panel-battle" class="panel active" role="tabpanel" aria-labelledby="tab-battle"></section>
+    <section id="panel-defense" class="panel active" role="tabpanel" aria-labelledby="tab-defense"></section>
+    <section id="panel-standings" class="panel" role="tabpanel" aria-labelledby="tab-standings"></section>
     <section id="panel-matrix" class="panel" role="tabpanel" aria-labelledby="tab-matrix"></section>
     <section id="panel-history" class="panel" role="tabpanel" aria-labelledby="tab-history"></section>
   </main>

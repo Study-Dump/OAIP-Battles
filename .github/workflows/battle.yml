@@ -2,7 +2,7 @@ name: Battle
 
 on:
   push:
-    branches: ['vs/*']
+    branches: ['attack-*']
 
 permissions:
   contents: read
@@ -18,82 +18,57 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Parse vs/A-B
+      - name: Fetch main history
+        run: git fetch origin main --no-tags
+
+      - name: Parse attack-x
         run: |
           set -euo pipefail
           branch="${GITHUB_REF_NAME}"
-          if [[ ! "$branch" =~ ^vs/([1-5])-([1-5])$ ]]; then
-            echo "::error::Branch must be named vs/A-B with A,B in 1..5 (got: $branch)"
+          if [[ ! "$branch" =~ ^attack-([1-5])$ ]]; then
+            echo "::error::Branch must be named attack-1 ... attack-5 (got: $branch)"
             exit 1
           fi
-          a="${BASH_REMATCH[1]}"
-          b="${BASH_REMATCH[2]}"
-          if [[ "$a" == "$b" ]]; then
-            echo "::error::Team cannot fight itself: $branch"
-            exit 1
-          fi
-          {
-            echo "TEAM_A=$a"
-            echo "TEAM_B=$b"
-          } >> "$GITHUB_ENV"
-          echo "Battle: team$a vs team$b"
+          target="${BASH_REMATCH[1]}"
+          echo "TARGET=$target" >> "$GITHUB_ENV"
+          echo "Target: team$target"
 
-      - name: Compile solutions
+          if [[ ! -f solution.cpp ]]; then
+            echo "::error::solution.cpp not found in branch root"
+            exit 1
+          fi
+          if [[ ! -f README.md ]]; then
+            echo "::warning::README.md not found; branch README should contain the task statement"
+          fi
+
+      - name: Compile solution
         run: |
           set -euo pipefail
-          g++ -O2 -std=c++17 -o "$RUNNER_TEMP/sol_a" "teams/team${TEAM_A}/solution.cpp"
-          g++ -O2 -std=c++17 -o "$RUNNER_TEMP/sol_b" "teams/team${TEAM_B}/solution.cpp"
+          g++ -O2 -std=c++17 -o "$RUNNER_TEMP/solution" solution.cpp
 
-      - name: Run tests for team A
+      - name: Count revisions
         run: |
-          python3 scripts/runner.py \
-            --solution "$RUNNER_TEMP/sol_a" \
-            --tests-dir "tests/team${TEAM_A}" \
-            --author-prefix "0${TEAM_B}" \
-            --team "$TEAM_A" --opponent "$TEAM_B" \
-            --out "$RUNNER_TEMP/partial_a.json"
+          python3 scripts/revisions.py \
+            --target "$TARGET" \
+            --out "$RUNNER_TEMP/revisions.json"
 
-      - name: Run tests for team B
+      - name: Run attacks
         run: |
-          python3 scripts/runner.py \
-            --solution "$RUNNER_TEMP/sol_b" \
-            --tests-dir "tests/team${TEAM_B}" \
-            --author-prefix "0${TEAM_A}" \
-            --team "$TEAM_B" --opponent "$TEAM_A" \
-            --out "$RUNNER_TEMP/partial_b.json"
-
-      - name: Require tests from both teams
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-          import sys
-
-          for name in ("partial_a.json", "partial_b.json"):
-              path = os.path.join(os.environ["RUNNER_TEMP"], name)
-              with open(path, encoding="utf-8") as f:
-                  data = json.load(f)
-              if data.get("total", 0) == 0:
-                  print(f"::error::Team {data.get('team')} has no tests from team {data.get('attacked_by')}")
-                  sys.exit(1)
-              print(f"team{data['team']}: {data['passed']}/{data['total']} tests from team{data['attacked_by']}")
-          PY
-
-      - name: Merge results
-        run: |
-          python3 scripts/merge_results.py \
-            --a "$RUNNER_TEMP/partial_a.json" \
-            --b "$RUNNER_TEMP/partial_b.json" \
-            --battle "vs/${TEAM_A}-${TEAM_B}" \
-            --out site/results.json
+          python3 scripts/run_attack.py \
+            --solution "$RUNNER_TEMP/solution" \
+            --attacks-dir attacks \
+            --target "$TARGET" \
+            --revisions "$RUNNER_TEMP/revisions.json" \
+            --out "$RUNNER_TEMP/attack.json"
 
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
-          name: battle-result
-          path: site/results.json
+          name: attack-result
+          path: ${{ runner.temp }}/attack.json
           if-no-files-found: error
           retention-days: 7
 
@@ -111,43 +86,24 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: battle-result
-          path: ${{ runner.temp }}/battle-result
+          name: attack-result
+          path: ${{ runner.temp }}/attack-result
 
-      - name: Append result to history and push
+      - name: Append result to history and scoreboard
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import json
-          import os
+          python3 scripts/merge_attack.py \
+            --result "$RUNNER_TEMP/attack-result/attack.json" \
+            --history site/history.json \
+            --scoreboard site/scoreboard.json
 
-          artifact = os.path.join(os.environ["RUNNER_TEMP"], "battle-result", "results.json")
-          with open(artifact, encoding="utf-8") as f:
-              entry = json.load(f)
-          if not entry.get("id"):
-              raise SystemExit("empty battle result")
-
-          with open("site/history.json", encoding="utf-8") as f:
-              history = json.load(f)
-          if not isinstance(history.get("battles"), list):
-              history = {"battles": []}
-
-          if not any(b.get("id") == entry["id"] for b in history["battles"]):
-              history["battles"].append(entry)
-
-          with open("site/results.json", "w", encoding="utf-8") as f:
-              json.dump(entry, f, indent=2, ensure_ascii=False)
-          with open("site/history.json", "w", encoding="utf-8") as f:
-              json.dump(history, f, indent=2, ensure_ascii=False)
-
-          PY
-          BATTLE="$(python3 -c 'import json; print(json.load(open("site/results.json"))["battle"])')"
+          LABEL="$(python3 -c 'import json, sys; d=json.load(open(sys.argv[1])); print("attack-" + d["target"] + " " + d["commit"][:7])' "$RUNNER_TEMP/attack-result/attack.json")"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add site/results.json site/history.json
+          git add site/history.json site/scoreboard.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "battle: ${BATTLE} [skip ci]"
+          git commit -m "attack: ${LABEL} [skip ci]"
           git push origin HEAD:main

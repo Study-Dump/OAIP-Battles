@@ -11,14 +11,15 @@ const REASON_LABELS = {
 };
 
 const state = {
-  results: null,
-  history: { battles: [] },
-  selectedId: null,
+  scoreboard: null,
+  history: { attacks: [] },
+  selectedTarget: null,
 };
 
 const els = {
   select: document.getElementById('battle-select'),
-  battle: document.getElementById('panel-battle'),
+  defense: document.getElementById('panel-defense'),
+  standings: document.getElementById('panel-standings'),
   matrix: document.getElementById('panel-matrix'),
   history: document.getElementById('panel-history'),
   clear: document.getElementById('clear-btn'),
@@ -41,7 +42,7 @@ function groupLabel(number) {
 }
 
 function teamLabel(team) {
-  if (team == null || team === '') return 'ничья';
+  if (team == null || team === '') return '—';
   const value = String(team);
   return /^[1-5]$/.test(value) ? groupLabel(value) : value;
 }
@@ -67,14 +68,30 @@ function fmtMs(sec) {
   return Number.isFinite(sec) ? `${(sec * 1000).toFixed(sec < 1 ? 1 : 0)} мс` : '—';
 }
 
-function avgTime(team) {
-  const tests = (team.tests || []).filter((t) => !t.skipped && Number.isFinite(t.time_sec));
-  if (!tests.length) return '—';
-  return fmtMs(tests.reduce((sum, t) => sum + t.time_sec, 0) / tests.length);
+function attackEntries() {
+  return Array.isArray(state.history.attacks) ? state.history.attacks : [];
 }
 
-function battleTeams(battle) {
-  return Array.isArray(battle.teams) ? battle.teams : [];
+function latestEntries() {
+  const latest = {};
+  attackEntries().forEach((entry) => {
+    const target = String(entry.target || '');
+    if (!TEAMS.some((team) => String(team) === target)) return;
+    const current = latest[target];
+    if (!current || String(entry.timestamp || '') >= String(current.timestamp || '')) {
+      latest[target] = entry;
+    }
+  });
+  return latest;
+}
+
+function availableTargets() {
+  return Object.keys(latestEntries()).sort((a, b) => Number(a) - Number(b));
+}
+
+function selectedEntry() {
+  const latest = latestEntries();
+  return latest[state.selectedTarget] || latest[availableTargets()[0]] || null;
 }
 
 async function fetchJson(url, fallback, quiet = false) {
@@ -88,19 +105,6 @@ async function fetchJson(url, fallback, quiet = false) {
   }
 }
 
-function battles() {
-  const list = Array.isArray(state.history.battles) ? [...state.history.battles] : [];
-  if (state.results && state.results.id && !list.some((b) => b.id === state.results.id)) {
-    list.unshift(state.results);
-  }
-  return list;
-}
-
-function selectedBattle() {
-  const all = battles();
-  return all.find((b) => b.id === state.selectedId) || all[0] || null;
-}
-
 function emptyState(title, text, href) {
   const link = href
     ? `<a class="btn" href="${href}" target="_blank" rel="noopener">GitHub</a>`
@@ -111,59 +115,45 @@ function emptyState(title, text, href) {
 
 function renderAll() {
   renderSelector();
-  renderBattle(selectedBattle());
+  renderDefense();
+  renderStandings();
   renderMatrix();
   renderHistory();
 }
 
 function renderSelector() {
-  const all = battles();
-  els.select.disabled = all.length === 0;
+  const targets = availableTargets();
+  els.select.disabled = targets.length === 0;
 
-  if (!all.length) {
-    els.select.innerHTML = '<option>Нет баттлов</option>';
+  if (!targets.length) {
+    els.select.innerHTML = '<option>Нет защит</option>';
     return;
   }
 
-  els.select.innerHTML = all.map((battle) => {
-    const winner = battle.winner ? `победитель: ${teamLabel(battle.winner)}` : 'ничья';
-    return `<option value="${esc(battle.id)}">${esc(battle.battle)} — ${fmtDate(battle.timestamp)} — ${winner}</option>`;
+  els.select.innerHTML = targets.map((target) => {
+    const entry = latestEntries()[target];
+    const defense = entry.defense || {};
+    const status = defense.held ? 'выстоял' : 'пробит';
+    return `<option value="${esc(target)}">attack-${esc(target)} · ${teamLabel(target)} · ${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</option>`;
   }).join('');
 
-  els.select.value = state.selectedId ?? all[0].id;
+  els.select.value = state.selectedTarget ?? targets[targets.length - 1];
 }
 
-function selectBattle(id) {
-  state.selectedId = id;
-  window.history.replaceState(null, '', id ? `#${encodeURIComponent(id)}` : location.pathname);
-  els.select.value = id ?? '';
-  renderBattle(selectedBattle());
+function selectTarget(target) {
+  if (!target) return;
+  state.selectedTarget = String(target);
+  window.history.replaceState(null, '', `#attack-${state.selectedTarget}`);
+  els.select.value = state.selectedTarget;
+  renderDefense();
 }
 
-function renderTeamCard(team, winner) {
-  const isWinner = winner != null && String(winner) === String(team.team);
-  const tests = team.tests || [];
-  const failed = tests.filter((t) => !t.skipped && !t.passed).length;
-  const skipped = tests.filter((t) => t.skipped).length;
-  const badge = isWinner ? '<span class="badge win">победитель</span>' : '';
-  const note = team.total === 0
-    ? '<p class="note warn">Тестов от соперника нет.</p>'
-    : '';
-
+function metric(label, value, note = '') {
   return `
-    <article class="team-card ${isWinner ? 'winner' : ''}">
-      <div class="team-head">
-        <span class="team-name">${esc(teamLabel(team.team))}</span>
-        ${badge}
-      </div>
-      <div class="score"><strong>${team.passed ?? 0}</strong><span>/${team.total ?? 0}</span></div>
-      <dl class="stats">
-        <div><dt>Атакован</dt><dd>${team.attacked_by ? esc(teamLabel(team.attacked_by)) : '—'}</dd></div>
-        <div><dt>Ср. время</dt><dd>${avgTime(team)}</dd></div>
-        <div><dt>Провалов</dt><dd>${failed}</dd></div>
-        <div><dt>Пропущено</dt><dd>${skipped}</dd></div>
-      </dl>
-      ${note}
+    <article class="metric">
+      <span class="metric-label">${esc(label)}</span>
+      <strong class="metric-value">${esc(value)}</strong>
+      ${note ? `<span class="metric-note">${esc(note)}</span>` : ''}
     </article>
   `;
 }
@@ -172,7 +162,7 @@ function renderCode(text) {
   return text ? esc(text) : '<span class="empty">(пусто)</span>';
 }
 
-function renderFailure(test) {
+function renderFailure(test, target) {
   let reason = REASON_LABELS[test.reason] || test.reason || 'провал';
   if (test.reason === 'runtime_error' && test.exit_code != null) {
     reason += ` (код ${test.exit_code})`;
@@ -190,8 +180,8 @@ function renderFailure(test) {
   return `
     <details class="failure">
       <summary>
-        <span class="failure-title"><span class="team-code">${esc(teamLabel(test.team))}</span> · ${esc(test.name)}</span>
-        <span class="meta">автор: ${esc(teamLabel(test.author))} · ${esc(reason)} · ${fmtMs(test.time_sec)}</span>
+        <span class="failure-title"><span class="team-code">${esc(teamLabel(test.author))}</span> → ${esc(teamLabel(target))} · ${esc(test.name)}</span>
+        <span class="meta">${esc(reason)} · ${fmtMs(test.time_sec)}</span>
       </summary>
       <div class="failure-body">
         ${diff}
@@ -206,38 +196,87 @@ function renderFailure(test) {
   `;
 }
 
-function renderBattle(battle) {
-  if (!battle) {
-    els.battle.innerHTML = emptyState(
-      'Нет баттлов',
-      'Создайте ветку <code>vs/A-B</code> и сделайте коммит.',
+function renderDefense() {
+  const entry = selectedEntry();
+  if (!entry) {
+    els.defense.innerHTML = emptyState(
+      'Защит пока нет',
+      'Создайте ветку <code>attack-1</code> … <code>attack-5</code> и добавьте решение и атаки.',
       repoUrl('/branches')
     );
     return;
   }
 
-  const teams = battleTeams(battle);
+  const target = String(entry.target);
+  const defense = entry.defense || { passed: 0, total: 0, held: false };
+  const attackers = Array.isArray(entry.attackers) ? entry.attackers : [];
+  const attackRevs = Object.values(entry.attacks_rev || {}).reduce(
+    (sum, value) => sum + Number(value || 0),
+    0
+  );
   const failures = [];
-  teams.forEach((team) => {
-    (team.tests || [])
-      .filter((t) => !t.skipped && !t.passed)
-      .forEach((test) => failures.push({ team: team.team, ...test }));
+  attackers.forEach((attacker) => {
+    (attacker.tests || [])
+      .filter((test) => !test.skipped && !test.passed)
+      .forEach((test) => failures.push({ ...test, target }));
   });
 
-  const cards = teams
-    .map((team) => renderTeamCard(team, battle.winner))
-    .join('<span class="vs" aria-hidden="true">VS</span>');
-  const failuresHtml = failures.length
-    ? failures.map(renderFailure).join('')
-    : emptyState('Провалов нет', '');
-  const winner = battle.winner ? teamLabel(battle.winner) : 'ничья';
+  const rows = attackers.map((attacker) => {
+    const total = attacker.total ?? 0;
+    const passed = attacker.passed ?? 0;
+    const failed = attacker.failed ?? Math.max(0, total - passed);
+    const statusClass = failed === 0 ? 'good' : 'bad';
+    const status = failed === 0 ? 'выстоял' : 'пробил';
+    return `
+      <tr>
+        <th scope="row">${esc(teamLabel(attacker.team))}</th>
+        <td>${passed}/${total}</td>
+        <td class="${statusClass}">${failed}</td>
+        <td>${attacker.revision ?? 0}</td>
+        <td class="${statusClass}">${status}</td>
+      </tr>
+    `;
+  }).join('');
 
-  els.battle.innerHTML = `
+  const failuresHtml = failures.length
+    ? failures.map((test) => renderFailure(test, target)).join('')
+    : emptyState('Провалов нет', 'Защита выдержала все атаки.');
+
+  els.defense.innerHTML = `
     <div class="panel-head">
-      <h2>${esc(battle.battle)}</h2>
-      <p class="muted">${fmtDate(battle.timestamp)} · победитель: <strong>${esc(winner)}</strong></p>
+      <h2>attack-${esc(target)} <span class="muted">${esc(teamLabel(target))}</span></h2>
+      <p class="muted">${fmtDate(entry.timestamp)} · commit <code>${esc(String(entry.commit || '').slice(0, 7))}</code></p>
     </div>
-    <div class="score-grid">${cards}</div>
+
+    <div class="metric-grid">
+      <article class="metric ${defense.held ? 'metric-win' : ''}">
+        <span class="metric-label">Защита</span>
+        <strong class="score"><b>${defense.passed ?? 0}</b><span>/${defense.total ?? 0}</span></strong>
+        <span class="badge ${defense.held ? 'win' : ''}">${defense.held ? 'выстоял' : 'пробит'}</span>
+      </article>
+      ${metric('Ревизии решения', entry.solution_rev ?? 0)}
+      ${metric('Ревизии атак', attackRevs)}
+      ${metric('Команд-атакующих', attackers.length)}
+    </div>
+
+    <div class="panel-head">
+      <h2>Атаки <span class="count">${attackers.length}</span></h2>
+    </div>
+    <div class="table-wrap">
+      <table class="matrix attack-table">
+        <thead>
+          <tr>
+            <th scope="col">Атака</th>
+            <th scope="col">Пройдено</th>
+            <th scope="col">Провалено</th>
+            <th scope="col">Ревизии</th>
+            <th scope="col">Итог</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
     <div class="panel-head">
       <h2>Провалы <span class="count">${failures.length}</span></h2>
     </div>
@@ -245,20 +284,71 @@ function renderBattle(battle) {
   `;
 }
 
-function renderMatrix() {
-  const aggregate = {};
-  battles().forEach((battle) => {
-    battleTeams(battle).forEach((team) => {
-      const defender = String(team.team);
-      const attacker = String(team.attacked_by);
-      if (!aggregate[defender]) aggregate[defender] = {};
-      if (!aggregate[defender][attacker]) aggregate[defender][attacker] = { passed: 0, total: 0 };
-      aggregate[defender][attacker].passed += team.passed || 0;
-      aggregate[defender][attacker].total += team.total || 0;
-    });
-  });
+function renderStandings() {
+  const board = state.scoreboard;
+  if (!board || !Array.isArray(board.teams) || !board.teams.length) {
+    els.standings.innerHTML = emptyState('Зачёт пуст', 'Нужны результаты защит.');
+    return;
+  }
 
+  const winner = board.winner ? String(board.winner) : null;
+  const latest = latestEntries();
+  const missing = TEAMS.filter((team) => !latest[String(team)]);
+  const note = board.complete
+    ? (winner ? `Победитель: ${teamLabel(winner)}` : 'Ничья по всем показателям')
+    : `Ожидаются защиты: ${missing.map((team) => `attack-${team}`).join(', ')}`;
+
+  const rows = board.teams.map((team) => {
+    const defense = team.defense || {};
+    const isWinner = winner === String(team.team);
+    const status = defense.total
+      ? (defense.held ? 'выстоял' : 'пробит')
+      : '—';
+    return `
+      <tr class="${isWinner ? 'winner-row' : ''}">
+        <th scope="row">${esc(teamLabel(team.team))} ${isWinner ? '<span class="badge win">победитель</span>' : ''}</th>
+        <td>${team.defense_points ?? 0}/${defense.total ?? 0}</td>
+        <td>${team.attack_points ?? 0}/${team.attack_total ?? 0}</td>
+        <td><strong>${team.total_points ?? 0}</strong></td>
+        <td>${team.solution_rev ?? 0}</td>
+        <td>${team.attack_revs ?? 0}</td>
+        <td>${status}</td>
+      </tr>
+    `;
+  }).join('');
+
+  els.standings.innerHTML = `
+    <div class="panel-head">
+      <h2>Зачёт</h2>
+      <p class="muted">${esc(note)}</p>
+    </div>
+    <div class="table-wrap">
+      <table class="matrix standings-table">
+        <thead>
+          <tr>
+            <th scope="col">Команда</th>
+            <th scope="col">Защита</th>
+            <th scope="col">Атака</th>
+            <th scope="col">Всего</th>
+            <th scope="col">Рев. решения</th>
+            <th scope="col">Рев. атак</th>
+            <th scope="col">Статус</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <ul class="legend">
+      <li>1 тест = 1 очко: прошёл — защите, упал — автору атаки.</li>
+      <li>Тай-брейк: больше «выстоял», меньше ревизий решения, больше ревизий атак.</li>
+    </ul>
+  `;
+}
+
+function renderMatrix() {
+  const latest = latestEntries();
   let rows = '';
+
   TEAMS.forEach((defender) => {
     rows += `<tr><th scope="row">${groupLabel(defender)}</th>`;
     TEAMS.forEach((attacker) => {
@@ -266,14 +356,17 @@ function renderMatrix() {
         rows += '<td class="diag">—</td>';
         return;
       }
-      const cell = aggregate[String(defender)]?.[String(attacker)];
-      if (!cell || !cell.total) {
+      const entry = latest[String(defender)];
+      const attack = entry && (entry.attackers || []).find(
+        (item) => String(item.team) === String(attacker)
+      );
+      if (!attack || !attack.total) {
         rows += '<td class="no-data">—</td>';
         return;
       }
-      const ratio = cell.passed / cell.total;
+      const ratio = attack.passed / attack.total;
       const cls = ratio >= 0.999 ? 'good' : ratio >= 0.5 ? 'mid' : 'bad';
-      rows += `<td class="cell ${cls}" title="Пройдено ${cell.passed} из ${cell.total}">${cell.passed}/${cell.total}</td>`;
+      rows += `<td class="cell ${cls}" title="Пройдено ${attack.passed} из ${attack.total}">${attack.passed}/${attack.total}</td>`;
     });
     rows += '</tr>';
   });
@@ -281,6 +374,7 @@ function renderMatrix() {
   els.matrix.innerHTML = `
     <div class="panel-head">
       <h2>Краш-матрица</h2>
+      <p class="muted">Строка — защита, столбец — атака. Последняя ревизия каждой ветки.</p>
     </div>
     <div class="table-wrap">
       <table class="matrix">
@@ -302,27 +396,27 @@ function renderMatrix() {
 }
 
 function renderHistory() {
-  const all = battles();
+  const all = attackEntries();
   if (!all.length) {
     els.history.innerHTML = emptyState('История пуста', '');
     return;
   }
 
-  const rows = [...all].reverse().map((battle) => {
-    const scores = battleTeams(battle)
-      .map((team) => `${teamLabel(team.team)}: ${team.passed ?? 0}/${team.total ?? 0}`)
-      .join(' · ');
-    const winner = battle.winner ? `победитель: ${esc(teamLabel(battle.winner))}` : 'ничья';
+  const rows = [...all].reverse().map((entry) => {
+    const target = String(entry.target);
+    const defense = entry.defense || {};
+    const status = defense.held ? 'выстоял' : 'пробит';
     return `
       <article class="history-row">
         <div class="history-main">
-          <strong>${esc(battle.battle)}</strong>
-          <span class="muted">${fmtDate(battle.timestamp)}</span>
-          <span class="muted">${scores}</span>
+          <strong>attack-${esc(target)}</strong>
+          <span class="muted">${fmtDate(entry.timestamp)}</span>
+          <span class="muted">${esc(teamLabel(target))}: ${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</span>
+          <span class="muted">commit ${esc(String(entry.commit || '').slice(0, 7))} · solution_rev ${entry.solution_rev ?? 0}</span>
         </div>
         <div class="history-side">
-          <span class="badge ${battle.winner ? 'win' : ''}">${winner}</span>
-          <button type="button" class="btn" data-open="${esc(battle.id)}">Открыть</button>
+          <span class="badge ${defense.held ? 'win' : ''}">${status}</span>
+          <button type="button" class="btn" data-open="${esc(target)}">Открыть</button>
         </div>
       </article>
     `;
@@ -330,7 +424,7 @@ function renderHistory() {
 
   els.history.innerHTML = `
     <div class="panel-head">
-      <h2>История <span class="count">${all.length}</span></h2>
+      <h2>История ревизий <span class="count">${all.length}</span></h2>
     </div>
     <div class="history-list">${rows}</div>
   `;
@@ -348,9 +442,9 @@ function setTab(name) {
 }
 
 async function load() {
-  const [results, historyData, repoData] = await Promise.all([
-    fetchJson('results.json', null),
-    fetchJson('history.json', { battles: [] }),
+  const [scoreboard, historyData, repoData] = await Promise.all([
+    fetchJson('scoreboard.json', null),
+    fetchJson('history.json', { attacks: [] }),
     fetchJson('repo.json', null, true),
   ]);
 
@@ -360,24 +454,28 @@ async function load() {
     if (repoLink) repoLink.href = repoUrl();
   }
 
-  state.results = results && results.id ? results : null;
-  state.history = historyData && Array.isArray(historyData.battles)
+  state.scoreboard = scoreboard;
+  state.history = historyData && Array.isArray(historyData.attacks)
     ? historyData
-    : { battles: [] };
+    : { attacks: [] };
 
-  const all = battles();
+  const targets = availableTargets();
   const fromHash = decodeURIComponent(location.hash.slice(1));
-  const defaultId = state.results?.id || all[all.length - 1]?.id || null;
-  state.selectedId = all.some((b) => b.id === fromHash) ? fromHash : defaultId;
+  const hashTarget = fromHash.match(/^attack-([1-5])$/)?.[1];
+  const latest = latestEntries();
+  const defaultTarget = targets.includes(hashTarget)
+    ? hashTarget
+    : targets[targets.length - 1] || null;
 
-  if (state.selectedId) {
-    window.history.replaceState(null, '', `#${encodeURIComponent(state.selectedId)}`);
+  state.selectedTarget = defaultTarget;
+  if (defaultTarget) {
+    window.history.replaceState(null, '', `#attack-${defaultTarget}`);
   }
 
   renderAll();
 }
 
-els.select.addEventListener('change', (event) => selectBattle(event.target.value));
+els.select.addEventListener('change', (event) => selectTarget(event.target.value));
 els.clear.addEventListener('click', () => {
   const ok = window.confirm(
     'Очистить историю? Откроется workflow в GitHub — нажмите «Run workflow».'
@@ -394,16 +492,16 @@ document.querySelectorAll('.tabs .tab').forEach((tab) => {
 els.history.addEventListener('click', (event) => {
   const button = event.target.closest('[data-open]');
   if (!button) return;
-  selectBattle(button.dataset.open);
-  setTab('battle');
+  selectTarget(button.dataset.open);
+  setTab('defense');
 });
 
 window.addEventListener('hashchange', () => {
-  const id = decodeURIComponent(location.hash.slice(1));
-  if (battles().some((b) => b.id === id)) {
-    state.selectedId = id;
-    els.select.value = id;
-    renderBattle(selectedBattle());
+  const target = decodeURIComponent(location.hash.slice(1)).match(/^attack-([1-5])$/)?.[1];
+  if (target && latestEntries()[target]) {
+    state.selectedTarget = target;
+    els.select.value = target;
+    renderDefense();
   }
 });
 
