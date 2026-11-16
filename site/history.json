@@ -458,6 +458,152 @@
       },
       "id": "attack-2-10b850b",
       "timestamp": "2026-11-16T20:45:10.912338+00:00"
+    },
+    {
+      "mode": "attack",
+      "branch": "attack-3",
+      "commit": "77d10b3a8019353775e2a01aa74e74b68a50c598",
+      "target": "3",
+      "solution_rev": 0,
+      "attacks_rev": {
+        "1": 1,
+        "2": 1,
+        "4": 1,
+        "5": 1
+      },
+      "attackers": [
+        {
+          "team": "1",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "Hello, world!\n",
+              "time_sec": 0.002,
+              "actual_output": "Hello, world!\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_hello",
+              "path": "attacks/team1/01_hello"
+            }
+          ]
+        },
+        {
+          "team": "2",
+          "passed": 1,
+          "total": 2,
+          "failed": 1,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "Hello, world!\n",
+              "time_sec": 0.0013,
+              "actual_output": "Hello, world!\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "01_hello",
+              "path": "attacks/team2/01_hello"
+            },
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "Nope\n",
+              "time_sec": 0.0013,
+              "actual_output": "Hello, world!\n",
+              "passed": false,
+              "reason": "output_mismatch",
+              "diff": {
+                "first_diff_line": 1,
+                "actual_line": "Hello, world!",
+                "expected_line": "Nope"
+              },
+              "author": "2",
+              "name": "02_bad",
+              "path": "attacks/team2/02_bad"
+            }
+          ]
+        },
+        {
+          "team": "4",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "Hello, world!\n",
+              "time_sec": 0.0013,
+              "actual_output": "Hello, world!\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "01_hello",
+              "path": "attacks/team4/01_hello"
+            }
+          ]
+        },
+        {
+          "team": "5",
+          "passed": 0,
+          "total": 2,
+          "failed": 2,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "No\n",
+              "time_sec": 0.0012,
+              "actual_output": "Hello, world!\n",
+              "passed": false,
+              "reason": "output_mismatch",
+              "diff": {
+                "first_diff_line": 1,
+                "actual_line": "Hello, world!",
+                "expected_line": "No"
+              },
+              "author": "5",
+              "name": "01_bad",
+              "path": "attacks/team5/01_bad"
+            },
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "",
+              "time_sec": 0.0013,
+              "actual_output": "Hello, world!\n",
+              "passed": false,
+              "reason": "output_mismatch",
+              "diff": {
+                "first_diff_line": 1,
+                "actual_line": "Hello, world!",
+                "expected_line": ""
+              },
+              "author": "5",
+              "name": "02_bad_empty",
+              "path": "attacks/team5/02_bad_empty"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 3,
+        "total": 6,
+        "ratio": 0.5,
+        "held": false
+      },
+      "id": "attack-3-77d10b3",
+      "timestamp": "2026-11-16T20:45:41.109812+00:00"
     }
   ]
 }
