@@ -1,3 +1,111 @@
 {
-  "attacks": []
+  "attacks": [
+    {
+      "mode": "attack",
+      "branch": "attack-3",
+      "commit": "de0489b1ba253a54f7b9aad84c4133eea7392ce8",
+      "target": "3",
+      "solution_rev": 1,
+      "attacks_rev": {
+        "1": 1,
+        "2": 1,
+        "4": 1,
+        "5": 1
+      },
+      "attackers": [
+        {
+          "team": "1",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1 10\n",
+              "expected_output": "11\n",
+              "time_sec": 0.0015,
+              "actual_output": "11\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_sum",
+              "path": "attacks/team1/01_sum"
+            }
+          ]
+        },
+        {
+          "team": "2",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "2 10\n",
+              "expected_output": "12\n",
+              "time_sec": 0.0012,
+              "actual_output": "12\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "01_sum",
+              "path": "attacks/team2/01_sum"
+            }
+          ]
+        },
+        {
+          "team": "4",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "4 10\n",
+              "expected_output": "14\n",
+              "time_sec": 0.001,
+              "actual_output": "14\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "01_sum",
+              "path": "attacks/team4/01_sum"
+            }
+          ]
+        },
+        {
+          "team": "5",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "5 10\n",
+              "expected_output": "15\n",
+              "time_sec": 0.001,
+              "actual_output": "15\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "01_sum",
+              "path": "attacks/team5/01_sum"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 4,
+        "total": 4,
+        "ratio": 1.0,
+        "held": true
+      },
+      "id": "attack-3-de0489b",
+      "timestamp": "2026-11-16T19:36:59.445101+00:00"
+    }
+  ]
 }
