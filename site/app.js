@@ -13,6 +13,7 @@ const REASON_LABELS = {
 };
 
 const state = {
+  scoreboard: null,
   history: { attacks: [] },
   selectedTarget: null,
 };
@@ -74,6 +75,28 @@ function meanTime(tests) {
     .filter((value) => Number.isFinite(value));
   if (!values.length) return null;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function leadingTeam() {
+  const board = state.scoreboard;
+  if (!board || !Array.isArray(board.teams) || !board.teams.length) return null;
+  if (board.winner) return String(board.winner);
+
+  const key = (team) => [
+    team.total_points ?? 0,
+    team.defense?.held ? 1 : 0,
+    -(team.solution_rev ?? 0),
+    team.attack_revs ?? 0,
+  ];
+  const ranked = [...board.teams].sort((a, b) => {
+    const left = key(a);
+    const right = key(b);
+    for (let i = 0; i < left.length; i += 1) {
+      if (left[i] !== right[i]) return right[i] - left[i];
+    }
+    return 0;
+  });
+  return ranked[0] ? String(ranked[0].team) : null;
 }
 
 function attackEntries() {
@@ -194,7 +217,7 @@ function renderFailure(test, target) {
         ${diff}
         <div class="panes">
           <div class="pane"><h4>Input</h4><pre>${renderCode(test.input)}</pre></div>
-          <div class="pane"><h4>Actual</h4><pre class="bad">${renderCode(test.actual_output)}</pre></div>
+          <div class="pane"><h4>Output</h4><pre class="bad">${renderCode(test.actual_output)}</pre></div>
           <div class="pane"><h4>Expected</h4><pre class="good">${renderCode(test.expected_output)}</pre></div>
           ${stderr}
         </div>
@@ -263,7 +286,7 @@ function renderDefense() {
         <span class="badge ${defense.held ? 'win' : ''}">${defense.held ? 'выстоял' : 'пробит'}</span>
       </article>
       ${metric('Ревизии решения', entry.solution_rev ?? 0)}
-      ${metric('Ревизии атак', attackRevs)}
+      ${metric('Сумма ревизий атак', attackRevs)}
       ${metric('Команд-атакующих', attackers.length)}
     </div>
 
@@ -295,13 +318,19 @@ function renderDefense() {
 
 function renderMatrix() {
   const latest = latestEntries();
+  const leader = leadingTeam();
   let rows = '';
 
   TEAMS.forEach((defender) => {
-    rows += `<tr><th scope="row">${groupLabel(defender)}</th>`;
+    const leaderRow = String(defender) === leader;
+    rows += `<tr class="${leaderRow ? 'leader-row' : ''}"><th scope="row" class="${leaderRow ? 'leader-col' : ''}">${groupLabel(defender)}</th>`;
     TEAMS.forEach((attacker) => {
+      const leaderCol = String(attacker) === leader;
+      const classes = ['cell'];
+      if (leaderCol) classes.push('leader-col');
       if (defender === attacker) {
-        rows += '<td class="diag">—</td>';
+        classes.push('diag');
+        rows += `<td class="${classes.join(' ')}">—</td>`;
         return;
       }
       const entry = latest[String(defender)];
@@ -309,13 +338,14 @@ function renderMatrix() {
         (item) => String(item.team) === String(attacker)
       );
       if (!attack || !attack.total) {
-        rows += '<td class="no-data">—</td>';
+        classes.push('no-data');
+        rows += `<td class="${classes.join(' ')}">—</td>`;
         return;
       }
       const ratio = attack.passed / attack.total;
-      const cls = ratio >= 0.999 ? 'good' : ratio >= 0.5 ? 'mid' : 'bad';
+      classes.push(ratio >= 0.999 ? 'good' : ratio >= 0.5 ? 'mid' : 'bad');
       const avg = fmtMs(meanTime(attack.tests));
-      rows += `<td class="cell ${cls}" title="Пройдено ${attack.passed} из ${attack.total}; среднее время ${avg}"><span class="cell-score">${attack.passed}/${attack.total}</span><span class="cell-time">${avg}</span></td>`;
+      rows += `<td class="${classes.join(' ')}" title="Пройдено ${attack.passed} из ${attack.total}; среднее время ${avg}"><span class="cell-score">${attack.passed}/${attack.total}</span><span class="cell-time">${avg}</span></td>`;
     });
     rows += '</tr>';
   });
@@ -330,7 +360,7 @@ function renderMatrix() {
         <thead>
           <tr>
             <th scope="col">Защита \\ Атака</th>
-            ${TEAMS.map((team) => `<th scope="col">${groupLabel(team)}</th>`).join('')}
+            ${TEAMS.map((team) => `<th scope="col" class="${String(team) === leader ? 'leader-col' : ''}">${groupLabel(team)}</th>`).join('')}
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -340,6 +370,7 @@ function renderMatrix() {
       <li><span class="swatch good"></span> защита выдержала</li>
       <li><span class="swatch mid"></span> частично</li>
       <li><span class="swatch bad"></span> атака пробила</li>
+      <li><span class="swatch leader"></span> лидирующая группа</li>
       <li>в ячейке: пройдено/всего и среднее время</li>
     </ul>
   `;
@@ -392,7 +423,8 @@ function setTab(name) {
 }
 
 async function load() {
-  const [historyData, repoData] = await Promise.all([
+  const [scoreboard, historyData, repoData] = await Promise.all([
+    fetchJson('scoreboard.json', null, true),
     fetchJson('history.json', { attacks: [] }),
     fetchJson('repo.json', null, true),
   ]);
@@ -403,6 +435,7 @@ async function load() {
     if (repoLink) repoLink.href = repoUrl();
   }
 
+  state.scoreboard = scoreboard;
   state.history = historyData && Array.isArray(historyData.attacks)
     ? historyData
     : { attacks: [] };
