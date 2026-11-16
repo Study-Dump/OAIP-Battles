@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one target solution against attacks submitted by all other teams."""
+"""Run one target solution against attacks submitted by the other teams."""
 
 import argparse
 import json
@@ -11,8 +11,7 @@ import sys
 from runner import run_test
 
 TEAMS = (1, 2, 3, 4, 5)
-TEST_NAME = re.compile(r"^\d{2}_.+")
-MAX_TESTS_PER_TEAM = 5
+TEST_NAME = re.compile(r"^(\d+)_.+$")
 
 
 def git(*args):
@@ -36,26 +35,22 @@ def read_revisions(path, target):
 
 def collect_tests(team_dir, team):
     if not os.path.isdir(team_dir):
-        raise SystemExit(f"team{team}: папка атак не найдена: {team_dir}")
+        return []
 
     tests = []
-    for name in sorted(os.listdir(team_dir)):
+    for name in os.listdir(team_dir):
         path = os.path.join(team_dir, name)
         if not os.path.isdir(path):
             continue
-        if not TEST_NAME.match(name):
+        match = TEST_NAME.match(name)
+        if not match:
             raise SystemExit(
                 f"team{team}: папка теста должна называться 0X_описание, получено: {name}"
             )
-        tests.append((name, path))
+        tests.append((int(match.group(1)), name, path))
 
-    if not tests:
-        raise SystemExit(f"team{team}: нет ни одного теста")
-    if len(tests) > MAX_TESTS_PER_TEAM:
-        raise SystemExit(
-            f"team{team}: максимум {MAX_TESTS_PER_TEAM} тестов, найдено {len(tests)}"
-        )
-    return tests
+    tests.sort(key=lambda item: (item[0], item[1]))
+    return [(name, path) for _, name, path in tests]
 
 
 def main():
@@ -74,12 +69,14 @@ def main():
 
     for team in TEAMS:
         if team == args.target:
-            if os.path.isdir(os.path.join(args.attacks_dir, f"team{team}")):
-                print(f"warning: attacks/team{team} ignored (self-attack)", file=sys.stderr)
             continue
 
         team_dir = os.path.join(args.attacks_dir, f"team{team}")
         tests = collect_tests(team_dir, team)
+        if not tests:
+            print(f"team{team}: нет тестов, пропуск", file=sys.stderr)
+            continue
+
         results = []
         passed = 0
 
@@ -144,10 +141,13 @@ def main():
             f"{attacker['passed']}/{attacker['total']} passed "
             f"(revision {attacker['revision']})"
         )
-    print(
-        f"team{args.target} defense: {total_passed}/{total_tests} "
-        f"({'held' if output['defense']['held'] else 'broken'})"
-    )
+    if total_tests:
+        print(
+            f"team{args.target} defense: {total_passed}/{total_tests} "
+            f"({'held' if output['defense']['held'] else 'broken'})"
+        )
+    else:
+        print(f"team{args.target} defense: нет тестов")
 
 
 if __name__ == "__main__":
