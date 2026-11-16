@@ -604,6 +604,138 @@
       },
       "id": "attack-3-77d10b3",
       "timestamp": "2026-11-16T20:45:41.109812+00:00"
+    },
+    {
+      "mode": "attack",
+      "branch": "attack-4",
+      "commit": "fe4cd0e3574b7e4a2196dc67a277df6594150de5",
+      "target": "4",
+      "solution_rev": 0,
+      "attacks_rev": {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "5": 0
+      },
+      "attackers": [
+        {
+          "team": "1",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "Hello, world!\n",
+              "time_sec": 0.002,
+              "actual_output": "Hello, world!\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_hello",
+              "path": "attacks/team1/01_hello"
+            }
+          ]
+        },
+        {
+          "team": "2",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "Hello, world!\n",
+              "time_sec": 0.0015,
+              "actual_output": "Hello, world!\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "01_hello",
+              "path": "attacks/team2/01_hello"
+            },
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "Hello, world!\n",
+              "time_sec": 0.0014,
+              "actual_output": "Hello, world!\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "02_empty",
+              "path": "attacks/team2/02_empty"
+            }
+          ]
+        },
+        {
+          "team": "3",
+          "passed": 1,
+          "total": 3,
+          "failed": 2,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "Hello, world!\n",
+              "time_sec": 0.0014,
+              "actual_output": "Hello, world!\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "01_hello",
+              "path": "attacks/team3/01_hello"
+            },
+            {
+              "skipped": false,
+              "input": "1 2\n",
+              "expected_output": "No\n",
+              "time_sec": 0.0014,
+              "actual_output": "Hello, world!\n",
+              "passed": false,
+              "reason": "output_mismatch",
+              "diff": {
+                "first_diff_line": 1,
+                "actual_line": "Hello, world!",
+                "expected_line": "No"
+              },
+              "author": "3",
+              "name": "02_bad",
+              "path": "attacks/team3/02_bad"
+            },
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "",
+              "time_sec": 0.0014,
+              "actual_output": "Hello, world!\n",
+              "passed": false,
+              "reason": "output_mismatch",
+              "diff": {
+                "first_diff_line": 1,
+                "actual_line": "Hello, world!",
+                "expected_line": ""
+              },
+              "author": "3",
+              "name": "03_bad_empty",
+              "path": "attacks/team3/03_bad_empty"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 4,
+        "total": 6,
+        "ratio": 0.6667,
+        "held": false
+      },
+      "id": "attack-4-fe4cd0e",
+      "timestamp": "2026-11-16T20:46:05.490732+00:00"
     }
   ]
 }
