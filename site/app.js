@@ -7,6 +7,8 @@ const REASON_LABELS = {
   timeout: 'таймаут',
   runtime_error: 'ошибка выполнения',
   output_mismatch: 'неверный ответ',
+  output_missing: 'нет output.txt',
+  unexpected_stdout: 'лишний stdout',
   'missing input.txt or expected_output.txt': 'нет файлов теста',
 };
 

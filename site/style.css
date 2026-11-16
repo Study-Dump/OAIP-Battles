@@ -340,6 +340,10 @@ main {
   margin-bottom: var(--space-4);
 }
 
+.table-wrap + .panel-head {
+  margin-top: var(--space-5);
+}
+
 .panel-head h2 {
   margin: 0;
   font-family: var(--font-display);

@@ -1,8 +1,8 @@
 """Прогон тестов одной команды.
 
 Тест — каталог с input.txt и expected_output.txt. Решение запускается в пустом
-временном каталоге, куда кладётся input.txt; ответ берётся из output.txt, а если
-файл не создан — из stdout. Содержимое input.txt также подаётся на stdin.
+временном каталоге, куда кладётся input.txt. Ответ читается только из output.txt;
+stdin и stdout не используются.
 """
 
 import argparse
@@ -59,7 +59,7 @@ def run_test(solution, test_dir, timeout_sec=TIMEOUT_SEC):
             proc = subprocess.run(
                 [os.path.abspath(solution)],
                 cwd=tmp,
-                input=input_content,
+                stdin=subprocess.DEVNULL,
                 text=True,
                 capture_output=True,
                 timeout=timeout_sec,
@@ -84,7 +84,8 @@ def run_test(solution, test_dir, timeout_sec=TIMEOUT_SEC):
             }
 
         output_path = os.path.join(tmp, "output.txt")
-        actual = _read(output_path) if os.path.isfile(output_path) else proc.stdout
+        output_exists = os.path.isfile(output_path)
+        actual = _read(output_path) if output_exists else ""
 
         result = {
             **base,
@@ -101,6 +102,14 @@ def run_test(solution, test_dir, timeout_sec=TIMEOUT_SEC):
                     "stderr": proc.stderr[:STDERR_LIMIT],
                 }
             )
+            return result
+
+        if not output_exists:
+            result.update({"passed": False, "reason": "output_missing"})
+            return result
+
+        if proc.stdout.strip():
+            result.update({"passed": False, "reason": "unexpected_stdout"})
             return result
 
         passed, diff = compare_outputs(actual, expected)

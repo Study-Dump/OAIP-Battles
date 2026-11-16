@@ -1,6 +1,8 @@
-#include <iostream>
+#include <fstream>
 
 int main() {
-    std::cout << "Hello, world!\n";
+    std::ifstream input("input.txt");
+    std::ofstream output("output.txt");
+    output << "Hello, world!\n";
     return 0;
 }
