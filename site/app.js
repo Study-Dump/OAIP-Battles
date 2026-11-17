@@ -22,6 +22,7 @@ const els = {
   select: document.getElementById('battle-select'),
   defense: document.getElementById('panel-defense'),
   matrix: document.getElementById('panel-matrix'),
+  results: document.getElementById('panel-results'),
   history: document.getElementById('panel-history'),
   clear: document.getElementById('clear-btn'),
 };
@@ -77,51 +78,25 @@ function meanTime(tests) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
-function leadingTeam() {
-  const board = state.scoreboard;
-  if (!board || !Array.isArray(board.teams) || !board.teams.length) return null;
-  if (board.winner) return String(board.winner);
-
-  const key = (team) => [
-    team.total_points ?? 0,
-    team.defense?.held ? 1 : 0,
-    -(team.solution_rev ?? 0),
-    team.attack_revs ?? 0,
-  ];
-  const ranked = [...board.teams].sort((a, b) => {
-    const left = key(a);
-    const right = key(b);
-    for (let i = 0; i < left.length; i += 1) {
-      if (left[i] !== right[i]) return right[i] - left[i];
-    }
-    return 0;
-  });
-  return ranked[0] ? String(ranked[0].team) : null;
-}
-
 function attackEntries() {
   return Array.isArray(state.history.attacks) ? state.history.attacks : [];
 }
 
-function revisionEntries() {
-  const byTarget = new Map();
-  attackEntries().forEach((entry) => {
-    const target = String(entry.target || '');
-    if (!TEAMS.some((team) => String(team) === target)) return;
-    const list = byTarget.get(target) || [];
-    list.push(entry);
-    byTarget.set(target, list);
-  });
-
-  const revisions = [];
-  byTarget.forEach((list) => {
-    list.sort((a, b) => String(a.timestamp || '').localeCompare(String(b.timestamp || '')));
-    revisions.push(...list.slice(1));
-  });
-
-  return revisions.sort(
-    (a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || ''))
+function hasRevisions(entry) {
+  const solution = Number(entry.solution_rev ?? 0);
+  const attacks = Object.values(entry.attacks_rev || {}).some(
+    (value) => Number(value) > 0
   );
+  return solution > 0 || attacks;
+}
+
+function revisionEntries() {
+  return attackEntries()
+    .filter((entry) => {
+      const target = String(entry.target || '');
+      return TEAMS.some((team) => String(team) === target) && hasRevisions(entry);
+    })
+    .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
 }
 
 function latestEntries() {
@@ -169,6 +144,7 @@ function renderAll() {
   renderSelector();
   renderDefense();
   renderMatrix();
+  renderResults();
   renderHistory();
 }
 
@@ -306,8 +282,8 @@ function renderDefense() {
         <strong class="score"><b>${defense.passed ?? 0}</b><span>/${defense.total ?? 0}</span></strong>
         <span class="badge ${defense.held ? 'win' : ''}">${defense.held ? 'выстоял' : 'пробит'}</span>
       </article>
-      ${metric('Ревизии решений', entry.solution_rev ?? 0)}
-      ${metric('Ревизии атак', attackRevs)}
+      ${metric('Ревизии решений', entry.solution_rev ?? 0, 'после старта')}
+      ${metric('Ревизии атак', attackRevs, 'сумма по командам')}
       ${metric('Команд-атакующих', attackers.length)}
     </div>
 
@@ -339,16 +315,12 @@ function renderDefense() {
 
 function renderMatrix() {
   const latest = latestEntries();
-  const leader = leadingTeam();
   let rows = '';
 
   TEAMS.forEach((defender) => {
-    const leaderRow = String(defender) === leader;
-    rows += `<tr class="${leaderRow ? 'leader-row' : ''}"><th scope="row" class="${leaderRow ? 'leader-col' : ''}">${groupLabel(defender)}</th>`;
+    rows += `<tr><th scope="row">${groupLabel(defender)}</th>`;
     TEAMS.forEach((attacker) => {
-      const leaderCol = String(attacker) === leader;
       const classes = ['cell'];
-      if (leaderCol) classes.push('leader-col');
       if (defender === attacker) {
         classes.push('diag');
         rows += `<td class="${classes.join(' ')}">—</td>`;
@@ -374,13 +346,14 @@ function renderMatrix() {
   els.matrix.innerHTML = `
     <div class="panel-head">
       <h2>Краш-матрица</h2>
+      <p class="muted">Итоговое место и победитель — во вкладке «Результаты».</p>
     </div>
     <div class="table-wrap">
       <table class="matrix">
         <thead>
           <tr>
             <th scope="col">Защита \\ Атака</th>
-            ${TEAMS.map((team) => `<th scope="col" class="${String(team) === leader ? 'leader-col' : ''}">${groupLabel(team)}</th>`).join('')}
+            ${TEAMS.map((team) => `<th scope="col">${groupLabel(team)}</th>`).join('')}
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -394,12 +367,196 @@ function renderMatrix() {
   `;
 }
 
+function rankKey(team) {
+  return [
+    Number(team.total_points ?? 0),
+    team.defense?.held ? 1 : 0,
+    -Number(team.solution_rev ?? 0),
+    Number(team.attack_revs ?? 0),
+  ];
+}
+
+function rankedTeams() {
+  const teams = Array.isArray(state.scoreboard?.teams) ? [...state.scoreboard.teams] : [];
+  return teams.sort((a, b) => {
+    const left = rankKey(a);
+    const right = rankKey(b);
+    for (let i = 0; i < left.length; i += 1) {
+      if (left[i] !== right[i]) return right[i] - left[i];
+    }
+    return Number(a.team) - Number(b.team);
+  });
+}
+
+function defenseTestsFor(team) {
+  const entry = latestEntries()[String(team)];
+  if (!entry) return [];
+  return (entry.attackers || []).flatMap((attacker) => attacker.tests || []);
+}
+
+function teamRevisionHistory(team) {
+  const id = String(team);
+  const items = [];
+
+  attackEntries().forEach((entry) => {
+    const target = String(entry.target || '');
+    const timestamp = entry.timestamp || '';
+
+    if (target === id) {
+      const revision = Number(entry.solution_rev ?? 0);
+      if (revision > 0) {
+        items.push({
+          kind: 'solution',
+          revision,
+          timestamp,
+          target,
+          passed: entry.defense?.passed ?? 0,
+          total: entry.defense?.total ?? 0,
+        });
+      }
+      return;
+    }
+
+    const attacker = (entry.attackers || []).find(
+      (item) => String(item.team) === id
+    );
+    const revision = Number(attacker?.revision ?? 0);
+    if (attacker && revision > 0) {
+      items.push({
+        kind: 'attack',
+        revision,
+        timestamp,
+        target,
+        passed: attacker.passed ?? 0,
+        failed: attacker.failed ?? 0,
+        total: attacker.total ?? 0,
+      });
+    }
+  });
+
+  return items.sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+}
+
+function revisionItem(item) {
+  const solution = item.kind === 'solution';
+  const label = solution ? 'решение' : 'атака';
+  const result = solution
+    ? `защита ${item.passed}/${item.total}`
+    : `провалено ${item.failed}/${item.total}`;
+  return `
+    <li class="revision-item">
+      <span class="revision-tag ${esc(item.kind)}">${label}</span>
+      <span class="revision-main">${groupLabel(item.target)} · ревизия ${item.revision}</span>
+      <span class="revision-meta">${fmtDate(item.timestamp)} · ${result}</span>
+    </li>
+  `;
+}
+
+function renderResults() {
+  const board = state.scoreboard;
+  const done = Object.keys(latestEntries()).length;
+
+  if (!board || !board.complete) {
+    const missing = TEAMS
+      .filter((team) => !latestEntries()[String(team)])
+      .map(teamLabel)
+      .join(', ');
+    const progress = Math.round((done / TEAMS.length) * 100);
+    els.results.innerHTML = `
+      <div class="results-wait">
+        <span class="eyebrow">Итоги</span>
+        <h2>Ждём все батлы</h2>
+        <p>Результаты появятся, когда все команды проведут свои защиты.</p>
+        <div class="results-progress">
+          <div class="results-progress-head">
+            <span>${done} из ${TEAMS.length} защит</span>
+            <strong>${progress}%</strong>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="${TEAMS.length}" aria-valuenow="${done}">
+            <span style="width: ${progress}%"></span>
+          </div>
+        </div>
+        <p class="muted">${missing ? `Осталось: ${esc(missing)}.` : 'Все защиты уже провели батлы.'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  const teams = rankedTeams();
+  const winner = board.winner ? String(board.winner) : null;
+  const cards = teams.map((team, index) => {
+    const defense = team.defense || {};
+    const solutionRev = Number(team.solution_rev ?? 0);
+    const attackRevs = Number(team.attack_revs ?? 0);
+    const revisions = solutionRev + attackRevs;
+    const history = teamRevisionHistory(team.team);
+    const isWinner = winner === String(team.team);
+    const status = defense.held ? 'защита выстояла' : 'защита пробита';
+    return `
+      <article class="result-card ${isWinner ? 'winner' : ''}">
+        <div class="result-top">
+          <span class="result-place">${String(index + 1).padStart(2, '0')}</span>
+          <div class="result-title">
+            <h3>${esc(teamLabel(team.team))}</h3>
+            <span class="badge ${defense.held ? 'win' : ''}">${status}</span>
+          </div>
+          <div class="result-points">
+            <strong>${team.total_points ?? 0}</strong>
+            <span>очков</span>
+          </div>
+        </div>
+        <div class="result-stats">
+          <div>
+            <span>Держал тестов</span>
+            <strong>${defense.passed ?? 0}/${defense.total ?? 0}</strong>
+          </div>
+          <div>
+            <span>Ср. время</span>
+            <strong>${fmtMs(meanTime(defenseTestsFor(team.team)))}</strong>
+          </div>
+          <div>
+            <span>Всего ревизий</span>
+            <strong>${revisions}</strong>
+            <small>решение ${solutionRev} · атаки ${attackRevs}</small>
+          </div>
+          <div>
+            <span>Атаки</span>
+            <strong>${team.attack_points ?? 0}/${team.attack_total ?? 0}</strong>
+            <small>тестов пробито</small>
+          </div>
+        </div>
+        <details class="revision-log">
+          <summary>История ревизий <span class="count">${history.length}</span></summary>
+          ${history.length
+            ? `<ul class="revision-list">${history.map(revisionItem).join('')}</ul>`
+            : '<p class="muted">Ревизий после старта пока нет.</p>'}
+        </details>
+        <div class="result-actions">
+          <button type="button" class="btn" data-open="${esc(team.team)}">Открыть защиту</button>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  els.results.innerHTML = `
+    <div class="panel-head results-head">
+      <div>
+        <span class="eyebrow">Итоги</span>
+        <h2>Результаты</h2>
+      </div>
+      <p class="muted">${winner ? `Победитель · ${esc(teamLabel(winner))}` : 'Победитель не определён'}</p>
+    </div>
+    ${winner ? '' : '<p class="results-tie">Основные показатели лидеров совпали — ничья.</p>'}
+    <div class="results-grid">${cards}</div>
+  `;
+}
+
 function renderHistory() {
   const all = revisionEntries();
   if (!all.length) {
     els.history.innerHTML = emptyState(
       'Ревизий пока нет',
-      'Показаны только обновления после первой версии защиты.'
+      'Показаны только ревизии после старта батлов.'
     );
     return;
   }
@@ -408,13 +565,17 @@ function renderHistory() {
     const target = String(entry.target);
     const defense = entry.defense || {};
     const status = defense.held ? 'выстоял' : 'пробит';
+    const attackRevs = Object.values(entry.attacks_rev || {}).reduce(
+      (sum, value) => sum + Number(value || 0),
+      0
+    );
     return `
       <article class="history-row">
         <div class="history-main">
           <strong>attack-${esc(target)}</strong>
           <span class="muted">${fmtDate(entry.timestamp)}</span>
           <span class="muted">${esc(teamLabel(target))}: ${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</span>
-          <span class="muted">commit ${esc(String(entry.commit || '').slice(0, 7))} · solution_rev ${entry.solution_rev ?? 0}</span>
+          <span class="muted">commit ${esc(String(entry.commit || '').slice(0, 7))} · решение ${entry.solution_rev ?? 0} · атаки ${attackRevs}</span>
         </div>
         <div class="history-side">
           <span class="badge ${defense.held ? 'win' : ''}">${status}</span>
@@ -489,6 +650,13 @@ els.clear.addEventListener('click', () => {
 
 document.querySelectorAll('.tabs .tab').forEach((tab) => {
   tab.addEventListener('click', () => setTab(tab.dataset.tab));
+});
+
+els.results.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-open]');
+  if (!button) return;
+  selectTarget(button.dataset.open);
+  setTab('defense');
 });
 
 els.history.addEventListener('click', (event) => {

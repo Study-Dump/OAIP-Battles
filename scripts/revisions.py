@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Count solution and attack revisions on the current battle branch."""
+"""Count revisions made after the first battle of a target branch."""
 
 import argparse
 import json
@@ -14,11 +14,62 @@ def git(*args):
 
 
 def count_commits(base, path):
+    if not base:
+        return 0
     try:
         out = git("rev-list", "--count", f"{base}..HEAD", "--", path)
     except subprocess.CalledProcessError:
         return 0
     return int(out or 0)
+
+
+def first_battle_commit(target):
+    try:
+        raw = git("show", "origin/main:site/history.json")
+        history = json.loads(raw)
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return None
+
+    entries = [
+        entry
+        for entry in history.get("attacks", [])
+        if str(entry.get("target", "")) == str(target) and entry.get("commit")
+    ]
+    if not entries:
+        return None
+
+    first = min(
+        entries,
+        key=lambda entry: (entry.get("timestamp", ""), entry.get("id", "")),
+    )
+    return first["commit"]
+
+
+def has_tests(commit, team):
+    path = f"attacks/team{team}"
+    try:
+        out = git("ls-tree", "-r", "--name-only", commit, "--", path)
+    except subprocess.CalledProcessError:
+        return False
+    return any(line.endswith("/input.txt") for line in out.splitlines())
+
+
+def first_addition(base, team):
+    path = f"attacks/team{team}"
+    try:
+        out = git(
+            "log",
+            "--reverse",
+            "--diff-filter=A",
+            "--format=%H",
+            f"{base}..HEAD",
+            "--",
+            path,
+        )
+    except subprocess.CalledProcessError:
+        return None
+    lines = out.splitlines()
+    return lines[0] if lines else None
 
 
 def main():
@@ -27,20 +78,26 @@ def main():
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
-    try:
-        base = git("merge-base", "HEAD", "origin/main")
-    except subprocess.CalledProcessError:
-        base = git("rev-parse", "origin/main")
+    base = first_battle_commit(args.target)
+    solution_rev = count_commits(base, "solution.cpp")
+    attacks_rev = {}
+
+    for team in TEAMS:
+        if team == args.target:
+            continue
+        if not base:
+            team_base = None
+        elif has_tests(base, team):
+            team_base = base
+        else:
+            team_base = first_addition(base, team)
+        attacks_rev[str(team)] = count_commits(team_base, f"attacks/team{team}")
 
     revisions = {
         "base": base,
         "head": git("rev-parse", "HEAD"),
-        "solution_rev": count_commits(base, "solution.cpp"),
-        "attacks_rev": {
-            str(team): count_commits(base, f"attacks/team{team}")
-            for team in TEAMS
-            if team != args.target
-        },
+        "solution_rev": solution_rev,
+        "attacks_rev": attacks_rev,
     }
 
     with open(args.out, "w", encoding="utf-8") as f:
