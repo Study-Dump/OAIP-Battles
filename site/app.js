@@ -144,7 +144,7 @@ function renderSelector() {
     const defense = entry.defense || {};
     const status = defense.held ? 'выстояла' : 'пробита';
     const attempts = Number(entry.solution_rev ?? 0);
-    return `<option value="${esc(target)}">${teamLabel(target)} · ${defense.passed ?? 0}/${defense.total ?? 0} · ${status} · попыток защиты ${attempts}</option>`;
+    return `<option value="${esc(target)}">${teamLabel(target)} · ${defense.passed ?? 0}/${defense.total ?? 0} · ${status} · попыток решения ${attempts + 1}</option>`;
   }).join('');
 
   els.select.value = state.selectedTarget ?? targets[targets.length - 1];
@@ -184,7 +184,7 @@ function renderCode(text) {
 }
 
 function attemptName(revision) {
-  return Number(revision) > 0 ? `ревизия ${revision}` : 'начальная';
+  return `попытка ${Number(revision ?? 0) + 1}`;
 }
 
 function attackerHistory(target, team) {
@@ -421,10 +421,9 @@ function renderDefense() {
   const defense = entry.defense || { passed: 0, total: 0, held: false };
   const solutionRev = Number(entry.solution_rev ?? 0);
   const attackers = Array.isArray(entry.attackers) ? entry.attackers : [];
-  const attackRevs = attackers.reduce(
-    (sum, attacker) => sum + Number(attacker.revision ?? 0),
-    0
-  );
+  const attackRounds = attackers.length
+    ? Math.max(...attackers.map((attacker) => Number(attacker.revision ?? 0))) + 1
+    : 0;
   const byTeam = new Map(attackers.map((attacker) => [String(attacker.team), attacker]));
   const failures = [];
   attackers.forEach((attacker) => {
@@ -456,7 +455,7 @@ function renderDefense() {
           <th scope="row">${esc(teamLabel(team))}</th>
           <td>${passed}/${total}</td>
           <td class="${statusClass}">${failed}</td>
-          <td>${Number(attacker.revision ?? 0)}</td>
+          <td>${Number(attacker.revision ?? 0) + 1}</td>
           <td class="${statusClass}">${status}</td>
         </tr>
         ${renderAttackRevision(target, team, entry)}
@@ -473,7 +472,7 @@ function renderDefense() {
     <div class="panel-head defense-head">
       <div>
         <h2>${esc(teamLabel(target))}</h2>
-        <p class="muted">${defense.held ? 'Защита выстояла' : 'Защита пробита'} · попыток защититься: ${solutionRev}${archive ? ' · исторический батл' : ''}</p>
+        <p class="muted">${defense.held ? 'Защита выстояла' : 'Защита пробита'} · попыток решения: ${solutionRev + 1}${archive ? ' · исторический батл' : ''}</p>
       </div>
       <a class="btn compact" href="${repoUrl(`/tree/attack-${target}`)}" target="_blank" rel="noopener">Ветка на GitHub</a>
     </div>
@@ -484,8 +483,8 @@ function renderDefense() {
         <strong class="score"><b>${defense.passed ?? 0}</b><span>/${defense.total ?? 0}</span></strong>
         <span class="badge ${defense.held ? 'win' : ''}">${defense.held ? 'выстояла' : 'пробита'}</span>
       </article>
-      ${metric('Попыток защититься', solutionRev, 'ревизия решения')}
-      ${metric('Попыток атаковать', attackRevs, 'ревизии атак')}
+      ${metric('Попыток решения', solutionRev + 1, 'включая начальную')}
+      ${metric('Попыток атаки', attackRounds, 'включая начальную')}
       ${metric('Атакующих команд', attackers.length, `из ${TEAMS.length - 1}`)}
     </div>
 
@@ -522,7 +521,7 @@ function renderMatrix() {
   TEAMS.forEach((defender) => {
     const entry = latest[String(defender)];
     const attempts = Number(entry?.solution_rev ?? 0);
-    rows += `<tr><th scope="row" class="matrix-defender"><span>${groupLabel(defender)}</span><small>решение ${attempts}</small></th>`;
+    rows += `<tr><th scope="row" class="matrix-defender"><span>${groupLabel(defender)}</span><small>попыток ${attempts + 1}</small></th>`;
     TEAMS.forEach((attacker) => {
       const classes = ['cell'];
       if (defender === attacker) {
@@ -641,8 +640,8 @@ function revisionItem(item) {
   const solution = item.kind === 'solution';
   const label = solution ? 'защита' : 'атака';
   const main = solution
-    ? `Защита ${groupLabel(item.target)} · попытка ${item.revision}`
-    : `Атака на ${groupLabel(item.target)} · попытка ${item.revision}`;
+    ? `Защита ${groupLabel(item.target)} · попытка ${item.revision + 1}`
+    : `Атака на ${groupLabel(item.target)} · попытка ${item.revision + 1}`;
   const result = solution
     ? `защита ${item.passed}/${item.total}`
     : `пробито ${item.failed}/${item.total}`;
@@ -690,7 +689,6 @@ function renderResults() {
   const cards = teams.map((team, index) => {
     const defense = team.defense || {};
     const solutionRev = Number(team.solution_rev ?? 0);
-    const attackRevs = Number(team.attack_revs ?? 0);
     const history = teamRevisionHistory(team.team);
     const isWinner = winner === String(team.team);
     const status = defense.held ? 'защита выстояла' : 'защита пробита';
@@ -707,7 +705,7 @@ function renderResults() {
       attackByRevision.set(revision, current);
     });
     const attackAttempts = [...attackByRevision.values()].sort((a, b) => a.revision - b.revision);
-    const attemptLabel = (revision) => Number(revision) > 0 ? `ревизия ${revision}` : 'начальная';
+    const attemptLabel = (revision) => `попытка ${Number(revision ?? 0) + 1}`;
     return `
       <article class="result-card ${isWinner ? 'winner' : ''}">
         <div class="result-top">
@@ -738,9 +736,9 @@ function renderResults() {
             <small>20% итогового балла</small>
           </div>
           <div>
-            <span>Попыток защититься</span>
-            <strong>${solutionRev}</strong>
-            <small>ревизия решения · попыток атаки ${attackRevs}</small>
+            <span>Попыток решения / атак</span>
+            <strong>${solutionRev + 1} / ${attackAttempts.length}</strong>
+            <small>включая начальную</small>
           </div>
         </div>
         <div class="attempt-breakdown">
@@ -774,10 +772,10 @@ function renderResults() {
           </div>
         </div>
         <details class="revision-log">
-          <summary>История попыток <span class="count">${history.length}</span></summary>
+          <summary>История изменений <span class="count">${history.length}</span></summary>
           ${history.length
             ? `<ul class="revision-list">${history.map(revisionItem).join('')}</ul>`
-            : '<p class="muted">Попыток после старта пока нет.</p>'}
+            : '<p class="muted">Изменений пока нет.</p>'}
         </details>
         <div class="result-actions">
           <button type="button" class="btn" data-open="${esc(team.team)}">Открыть защиту</button>
@@ -816,15 +814,14 @@ function renderHistory() {
     const revisionTotal = revisionCount(entry);
     const solutionRev = Number(entry.solution_rev ?? 0);
     const attackers = Array.isArray(entry.attackers) ? entry.attackers : [];
-    const attackRevs = attackers.reduce(
-      (sum, attacker) => sum + Number(attacker.revision ?? 0),
-      0
-    );
+    const attackRounds = attackers.length
+      ? Math.max(...attackers.map((attacker) => Number(attacker.revision ?? 0))) + 1
+      : 0;
     const revisions = [
       solutionRev > 0
         ? `<li class="battle-rev-row">
             <span class="revision-tag solution">защита</span>
-            <span class="revision-main">Защита ${esc(teamLabel(target))} · попытка ${solutionRev}</span>
+            <span class="revision-main">Защита ${esc(teamLabel(target))} · попытка ${solutionRev + 1}</span>
             <span class="revision-meta">${defense.passed ?? 0}/${defense.total ?? 0} тестов</span>
           </li>`
         : '',
@@ -833,7 +830,7 @@ function renderHistory() {
         .map((attacker) => `
           <li class="battle-rev-row">
             <span class="revision-tag attack">атака</span>
-            <span class="revision-main">${esc(teamLabel(attacker.team))} → ${esc(teamLabel(target))} · попытка ${Number(attacker.revision)}</span>
+            <span class="revision-main">${esc(teamLabel(attacker.team))} → ${esc(teamLabel(target))} · попытка ${Number(attacker.revision) + 1}</span>
             <span class="revision-meta">${attacker.failed ?? 0}/${attacker.total ?? 0} пробито</span>
           </li>
         `),
@@ -846,9 +843,9 @@ function renderHistory() {
             <strong>Защита ${esc(teamLabel(target))}</strong>
             <span class="battle-meta">
               <span>${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</span>
-              <span>Попыток защититься: ${solutionRev}</span>
+              <span>Попыток решения: ${solutionRev + 1}</span>
               <span>Атакующих: ${attackers.length}</span>
-              <span>Попыток атаки: ${attackRevs}</span>
+              <span>Попыток атаки: ${attackRounds}</span>
             </span>
           </div>
           <div class="history-side">
@@ -857,9 +854,9 @@ function renderHistory() {
           </div>
         </div>
         <details class="battle-revisions">
-          <summary>Попытки команд <span class="count">${revisionTotal}</span></summary>
+          <summary>Изменения <span class="count">${revisionTotal}</span></summary>
           <div class="battle-rev-body">
-            ${revisionTotal ? `<ul class="battle-rev-list">${revisions}</ul>` : '<p class="muted">Стартовая защита — попыток после неё пока нет.</p>'}
+            ${revisionTotal ? `<ul class="battle-rev-list">${revisions}</ul>` : '<p class="muted">Начальная защита — изменений пока нет.</p>'}
           </div>
         </details>
       </article>
