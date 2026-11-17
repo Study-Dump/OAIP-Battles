@@ -16,6 +16,7 @@ const state = {
   scoreboard: null,
   history: { attacks: [] },
   selectedTarget: null,
+  selectedEntryId: null,
 };
 
 const els = {
@@ -93,6 +94,10 @@ function availableTargets() {
 }
 
 function selectedEntry() {
+  if (state.selectedEntryId) {
+    const selected = attackEntries().find((entry) => entry.id === state.selectedEntryId);
+    if (selected) return selected;
+  }
   const latest = latestEntries();
   return latest[state.selectedTarget] || latest[availableTargets()[0]] || null;
 }
@@ -148,7 +153,18 @@ function renderSelector() {
 function selectTarget(target) {
   if (!target) return;
   state.selectedTarget = String(target);
+  state.selectedEntryId = null;
   window.history.replaceState(null, '', `#attack-${state.selectedTarget}`);
+  els.select.value = state.selectedTarget;
+  renderDefense();
+}
+
+function selectBattle(id) {
+  const entry = attackEntries().find((item) => item.id === id);
+  if (!entry) return;
+  state.selectedTarget = String(entry.target);
+  state.selectedEntryId = id;
+  window.history.replaceState(null, '', `#battle-${id}`);
   els.select.value = state.selectedTarget;
   renderDefense();
 }
@@ -167,7 +183,195 @@ function renderCode(text) {
   return text ? esc(text) : '<span class="empty">(пусто)</span>';
 }
 
-function renderFailure(test, target) {
+function attemptName(revision) {
+  return Number(revision) > 0 ? `ревизия ${revision}` : 'начальная';
+}
+
+function attackerHistory(target, team) {
+  return attackEntries()
+    .filter((entry) => String(entry.target) === String(target))
+    .sort((a, b) => String(a.timestamp || '').localeCompare(String(b.timestamp || '')))
+    .map((entry) => {
+      const attacker = (entry.attackers || []).find(
+        (item) => String(item.team) === String(team)
+      );
+      return attacker ? { entry, attacker } : null;
+    })
+    .filter(Boolean);
+}
+
+function testsUpTo(target, team, selected) {
+  const history = attackerHistory(target, team);
+  const selectedAt = String(selected?.timestamp || '');
+  if (!selectedAt) return history;
+  return history.filter(({ entry }) => String(entry.timestamp || '') <= selectedAt);
+}
+
+function testMap(attacker) {
+  const map = new Map();
+  (attacker?.tests || []).forEach((test) => {
+    map.set(test.path || test.name || '(без имени)', test);
+  });
+  return map;
+}
+
+function testChanges(previous, current) {
+  const before = testMap(previous);
+  const after = testMap(current);
+  const changes = [];
+
+  after.forEach((test, path) => {
+    const old = before.get(path);
+    if (!old) {
+      changes.push({ type: 'added', path, before: null, after: test });
+      return;
+    }
+    if (String(old.input ?? '') !== String(test.input ?? '')
+        || String(old.expected_output ?? '') !== String(test.expected_output ?? '')) {
+      changes.push({ type: 'modified', path, before: old, after: test });
+    }
+  });
+
+  before.forEach((test, path) => {
+    if (!after.has(path)) changes.push({ type: 'removed', path, before: test, after: null });
+  });
+
+  return changes;
+}
+
+function splitLines(text) {
+  const value = String(text ?? '');
+  if (!value) return [];
+  return value.replace(/\n$/, '').split('\n');
+}
+
+function lineDiff(before, after) {
+  const a = splitLines(before);
+  const b = splitLines(after);
+  const rows = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+
+  for (let i = a.length - 1; i >= 0; i -= 1) {
+    for (let j = b.length - 1; j >= 0; j -= 1) {
+      rows[i][j] = a[i] === b[j]
+        ? rows[i + 1][j + 1] + 1
+        : Math.max(rows[i + 1][j], rows[i][j + 1]);
+    }
+  }
+
+  const result = [];
+  let i = 0;
+  let j = 0;
+
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      result.push({ type: 'same', text: a[i] });
+      i += 1;
+      j += 1;
+    } else if (rows[i + 1][j] >= rows[i][j + 1]) {
+      result.push({ type: 'del', text: a[i] });
+      i += 1;
+    } else {
+      result.push({ type: 'add', text: b[j] });
+      j += 1;
+    }
+  }
+
+  while (i < a.length) result.push({ type: 'del', text: a[i++] });
+  while (j < b.length) result.push({ type: 'add', text: b[j++] });
+  return result;
+}
+
+function diffBlock(label, before, after) {
+  if (String(before ?? '') === String(after ?? '')) return '';
+  const lines = lineDiff(before, after);
+  return `
+    <div class="diff-snippet">
+      <span class="diff-label">${esc(label)}</span>
+      <pre>${lines.map((line) => {
+        const prefix = line.type === 'add' ? '+' : line.type === 'del' ? '−' : ' ';
+        return `<span class="${line.type}">${prefix} ${esc(line.text)}</span>`;
+      }).join('\n')}</pre>
+    </div>
+  `;
+}
+
+function renderChange(change) {
+  const title = change.type === 'added'
+    ? `+ ${change.path}`
+    : change.type === 'removed'
+      ? `− ${change.path}`
+      : `± ${change.path}`;
+  const before = change.before || {};
+  const after = change.after || {};
+  return `
+    <div class="test-change">
+      <h5>${esc(title)}</h5>
+      ${diffBlock('input', before.input, after.input)}
+      ${diffBlock('expected', before.expected_output, after.expected_output)}
+    </div>
+  `;
+}
+
+function renderAttackRevision(target, team, selected) {
+  const attempts = testsUpTo(target, team, selected);
+  if (attempts.length < 2) return '';
+  const current = attempts[attempts.length - 1];
+  const revision = Number(current.attacker.revision ?? 0);
+  const previous = [...attempts].reverse().find(
+    (attempt) => Number(attempt.attacker.revision ?? 0) < revision
+  ) || attempts[attempts.length - 2];
+  const changes = testChanges(previous.attacker, current.attacker);
+  if (revision <= 0 && changes.length === 0) return '';
+
+  return `
+    <tr class="attack-revision-row">
+      <td colspan="5">
+        <details class="revision-details">
+          <summary>
+            <span class="revision-tag">атака</span>
+            <span>${attemptName(revision)}</span>
+            <span class="muted">${current.attacker.passed ?? 0}/${current.attacker.total ?? 0} тестов</span>
+            <span class="muted">${changes.length ? `${changes.length} изм.` : 'без изменений'}</span>
+          </summary>
+          <div class="revision-body">${changes.map(renderChange).join('')}</div>
+        </details>
+      </td>
+    </tr>
+  `;
+}
+
+function renderTestRevision(test, target, selected) {
+  const path = test.path || test.name || '(без имени)';
+  const attempts = testsUpTo(target, test.author, selected);
+  if (attempts.length < 2) return '';
+  const previous = attempts[attempts.length - 2];
+  const before = testMap(previous.attacker).get(path);
+  const after = test;
+
+  if (!before) {
+    return `
+      <div class="test-revision">
+        <h4>тест добавлен</h4>
+        ${diffBlock('input', '', after.input)}
+        ${diffBlock('expected', '', after.expected_output)}
+      </div>
+    `;
+  }
+
+  const changed = String(before.input ?? '') !== String(after.input ?? '')
+    || String(before.expected_output ?? '') !== String(after.expected_output ?? '');
+  if (!changed) return '';
+
+  return `
+    <div class="test-revision">
+      <h4>diff с прошлой попыткой</h4>
+      ${diffBlock('input', before.input, after.input)}
+      ${diffBlock('expected', before.expected_output, after.expected_output)}
+    </div>
+  `;
+}
+
+function renderFailure(test, target, entry) {
   let reason = REASON_LABELS[test.reason] || test.reason || 'провал';
   if (test.reason === 'runtime_error' && test.exit_code != null) {
     reason += ` (код ${test.exit_code})`;
@@ -189,6 +393,7 @@ function renderFailure(test, target) {
         <span class="meta">${esc(reason)}</span>
       </summary>
       <div class="failure-body">
+        ${renderTestRevision(test, target, entry)}
         ${diff}
         <div class="panes">
           <div class="pane"><h4>Input</h4><pre>${renderCode(test.input)}</pre></div>
@@ -254,18 +459,21 @@ function renderDefense() {
           <td>${Number(attacker.revision ?? 0)}</td>
           <td class="${statusClass}">${status}</td>
         </tr>
+        ${renderAttackRevision(target, team, entry)}
       `;
     }).join('');
 
   const failuresHtml = failures.length
-    ? failures.map((test) => renderFailure(test, target)).join('')
+    ? failures.map((test) => renderFailure(test, target, entry)).join('')
     : emptyState('Провалов нет', 'Защита выдержала все атаки.');
+  const latest = latestEntries()[target];
+  const archive = latest && state.selectedEntryId && latest.id !== state.selectedEntryId;
 
   els.defense.innerHTML = `
     <div class="panel-head defense-head">
       <div>
         <h2>${esc(teamLabel(target))}</h2>
-        <p class="muted">${defense.held ? 'Защита выстояла' : 'Защита пробита'} · попыток защититься: ${solutionRev}</p>
+        <p class="muted">${defense.held ? 'Защита выстояла' : 'Защита пробита'} · попыток защититься: ${solutionRev}${archive ? ' · исторический батл' : ''}</p>
       </div>
       <a class="btn compact" href="${repoUrl(`/tree/attack-${target}`)}" target="_blank" rel="noopener">Ветка на GitHub</a>
     </div>
@@ -489,6 +697,17 @@ function renderResults() {
     const defenseQuality = Math.round(Number(team.defense_quality ?? 0) * 100);
     const attackQuality = Math.round(Number(team.attack_quality ?? 0) * 100);
     const speedQuality = Math.round(Number(team.speed_quality ?? 0) * 100);
+    const defenseAttempts = Array.isArray(team.defense_attempts) ? team.defense_attempts : [];
+    const attackByRevision = new Map();
+    (Array.isArray(team.attack_attempts) ? team.attack_attempts : []).forEach((attempt) => {
+      const revision = Number(attempt.revision ?? 0);
+      const current = attackByRevision.get(revision) || { revision, failed: 0, total: 0 };
+      current.failed += Number(attempt.failed ?? 0);
+      current.total += Number(attempt.total ?? 0);
+      attackByRevision.set(revision, current);
+    });
+    const attackAttempts = [...attackByRevision.values()].sort((a, b) => a.revision - b.revision);
+    const attemptLabel = (revision) => Number(revision) > 0 ? `ревизия ${revision}` : 'начальная';
     return `
       <article class="result-card ${isWinner ? 'winner' : ''}">
         <div class="result-top">
@@ -506,7 +725,7 @@ function renderResults() {
           <div>
             <span>Защита</span>
             <strong>${defenseQuality}%</strong>
-            <small>${defense.passed ?? 0}/${defense.total ?? 0} тестов · покрытие ${Math.round(Number(team.defense_coverage ?? 0) * 100)}%</small>
+            <small>${team.defense_passed ?? 0}/${team.defense_total ?? 0} тестов · покрытие ${Math.round(Number(team.defense_coverage ?? 0) * 100)}%</small>
           </div>
           <div>
             <span>Атака</span>
@@ -522,6 +741,36 @@ function renderResults() {
             <span>Попыток защититься</span>
             <strong>${solutionRev}</strong>
             <small>ревизия решения · попыток атаки ${attackRevs}</small>
+          </div>
+        </div>
+        <div class="attempt-breakdown">
+          <div class="attempt-group">
+            <div class="attempt-head">
+              <span>Защита</span>
+              <span>${team.defense_passed ?? 0}/${team.defense_total ?? 0} тестов</span>
+            </div>
+            <ul class="attempt-list">
+              ${defenseAttempts.map((attempt) => `
+                <li>
+                  <span>${attemptLabel(attempt.revision)}</span>
+                  <span>${attempt.passed ?? 0}/${attempt.total ?? 0} тестов</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <div class="attempt-group">
+            <div class="attempt-head">
+              <span>Атака</span>
+              <span>${team.attack_points ?? 0}/${team.attack_total ?? 0} пробито</span>
+            </div>
+            <ul class="attempt-list">
+              ${attackAttempts.map((attempt) => `
+                <li>
+                  <span>${attemptLabel(attempt.revision)}</span>
+                  <span>${attempt.failed ?? 0}/${attempt.total ?? 0} пробито</span>
+                </li>
+              `).join('')}
+            </ul>
           </div>
         </div>
         <details class="revision-log">
@@ -604,7 +853,7 @@ function renderHistory() {
           </div>
           <div class="history-side">
             <span class="badge ${defense.held ? 'win' : ''}">${status}</span>
-            <button type="button" class="btn" data-open="${esc(target)}">Открыть</button>
+            <button type="button" class="btn" data-battle="${esc(entry.id)}">Открыть</button>
           </div>
         </div>
         <details class="battle-revisions">
@@ -658,14 +907,23 @@ async function load() {
   const targets = availableTargets();
   const fromHash = decodeURIComponent(location.hash.slice(1));
   const hashTarget = fromHash.match(/^attack-([1-5])$/)?.[1];
+  const hashBattle = fromHash.match(/^battle-(.+)$/)?.[1];
+  const battle = hashBattle && attackEntries().find((entry) => entry.id === hashBattle);
   const latest = latestEntries();
-  const defaultTarget = targets.includes(hashTarget)
-    ? hashTarget
-    : targets[targets.length - 1] || null;
+  const defaultTarget = battle
+    ? String(battle.target)
+    : targets.includes(hashTarget)
+      ? hashTarget
+      : targets[targets.length - 1] || null;
 
   state.selectedTarget = defaultTarget;
+  state.selectedEntryId = battle ? battle.id : null;
   if (defaultTarget) {
-    window.history.replaceState(null, '', `#attack-${defaultTarget}`);
+    window.history.replaceState(
+      null,
+      '',
+      battle ? `#battle-${battle.id}` : `#attack-${defaultTarget}`
+    );
   }
 
   renderAll();
@@ -693,17 +951,28 @@ els.results.addEventListener('click', (event) => {
 });
 
 els.history.addEventListener('click', (event) => {
-  const button = event.target.closest('[data-open]');
+  const button = event.target.closest('[data-battle]');
   if (!button) return;
-  selectTarget(button.dataset.open);
+  selectBattle(button.dataset.battle);
   setTab('defense');
 });
 
 window.addEventListener('hashchange', () => {
-  const target = decodeURIComponent(location.hash.slice(1)).match(/^attack-([1-5])$/)?.[1];
+  const hash = decodeURIComponent(location.hash.slice(1));
+  const target = hash.match(/^attack-([1-5])$/)?.[1];
   if (target && latestEntries()[target]) {
     state.selectedTarget = target;
+    state.selectedEntryId = null;
     els.select.value = target;
+    renderDefense();
+    return;
+  }
+  const battleId = hash.match(/^battle-(.+)$/)?.[1];
+  const battle = battleId && attackEntries().find((entry) => entry.id === battleId);
+  if (battle) {
+    state.selectedTarget = String(battle.target);
+    state.selectedEntryId = battle.id;
+    els.select.value = state.selectedTarget;
     renderDefense();
   }
 });
