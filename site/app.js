@@ -585,7 +585,6 @@ function renderDefense() {
 
     <div class="panel-head">
       <h2>Атаки <span class="count">${defense.total ?? 0}</span></h2>
-      <p class="muted">Строки — атакующие команды. «—» значит, что тестов не было.</p>
     </div>
     <div class="table-wrap">
       <table class="matrix attack-table">
@@ -880,7 +879,6 @@ function renderResults() {
         <span class="eyebrow">Итоги</span>
         <h2>Результаты</h2>
       </div>
-      <p class="muted">${winner ? `Победитель · ${esc(teamLabel(winner))}` : 'Победитель не определён'} · балл: защита 50% + атака 30% + скорость 20%</p>
     </div>
     ${winner ? '' : '<p class="results-tie">Основные показатели лидеров совпали — ничья.</p>'}
     <div class="results-grid">${cards}</div>
@@ -957,7 +955,6 @@ function renderHistory() {
   els.history.innerHTML = `
     <div class="panel-head">
       <h2>История батлов <span class="count">${all.length}</span></h2>
-      <p class="muted">Новые сверху. Раскройте карточку, чтобы увидеть попытки команд.</p>
     </div>
     <div class="history-list">${rows}</div>
   `;
