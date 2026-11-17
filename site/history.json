@@ -764,6 +764,137 @@
       },
       "id": "attack-2-a9d38e2",
       "timestamp": "2026-11-17T18:39:01.184278+00:00"
+    },
+    {
+      "mode": "attack",
+      "branch": "attack-3",
+      "commit": "7a8c3868c10328adcda6c84a4240c16c2eae2793",
+      "target": "3",
+      "solution_rev": 0,
+      "attacks_rev": {
+        "1": 0,
+        "2": 0,
+        "4": 0,
+        "5": 0
+      },
+      "attackers": [
+        {
+          "team": "1",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "4\n2000\nИванов;Книга A;1999;100\nПетров;Книга B;2001;200\nСидоров;Книга C;2002;150\nСмирнов;Книга D;2000;300\n",
+              "expected_output": "2\nСидоров;Книга C;2002;150\nПетров;Книга B;2001;200\n",
+              "time_sec": 0.0018,
+              "actual_output": "2\nСидоров;Книга C;2002;150\nПетров;Книга B;2001;200\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_basic",
+              "path": "attacks/team1/01_basic"
+            }
+          ]
+        },
+        {
+          "team": "2",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "3\n2010\nПетров;Альфа;2011;100\nИванов;Бета;2012;100\nИванов;Альфа;2013;100\n",
+              "expected_output": "3\nИванов;Альфа;2013;100\nИванов;Бета;2012;100\nПетров;Альфа;2011;100\n",
+              "time_sec": 0.0014,
+              "actual_output": "3\nИванов;Альфа;2013;100\nИванов;Бета;2012;100\nПетров;Альфа;2011;100\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "02_page_ties",
+              "path": "attacks/team2/02_page_ties"
+            },
+            {
+              "skipped": false,
+              "input": "2\n2020\nA;X;2020;10\nB;Y;2019;20\n",
+              "expected_output": "0\n",
+              "time_sec": 0.0014,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "03_no_matches",
+              "path": "attacks/team2/03_no_matches"
+            }
+          ]
+        },
+        {
+          "team": "4",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "0\n2000\n",
+              "expected_output": "0\n",
+              "time_sec": 0.0013,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "04_zero_items",
+              "path": "attacks/team4/04_zero_items"
+            }
+          ]
+        },
+        {
+          "team": "5",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "0\n",
+              "time_sec": 0.0013,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "05_empty_input",
+              "path": "attacks/team5/05_empty_input"
+            },
+            {
+              "skipped": false,
+              "input": "4\n1990\nЛев Толстой;Война и мир;1869;1225\nФёдор Достоевский;Преступление и наказание;1866;671\nАнтон Чехов;Вишнёвый сад;1904;100\nИван Бунин;Тёмные аллеи;1946;300\n",
+              "expected_output": "0\n",
+              "time_sec": 0.0013,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "06_classic_books",
+              "path": "attacks/team5/06_classic_books"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 6,
+        "total": 6,
+        "ratio": 1.0,
+        "held": true
+      },
+      "id": "attack-3-7a8c386",
+      "timestamp": "2026-11-17T18:39:30.465983+00:00"
     }
   ]
 }
