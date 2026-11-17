@@ -215,6 +215,99 @@ function testMap(attacker) {
   return map;
 }
 
+function defenseTestMap(entry) {
+  const map = new Map();
+  (entry?.attackers || []).forEach((attacker) => {
+    (attacker.tests || []).forEach((test) => {
+      map.set(test.path || test.name || '(без имени)', {
+        ...test,
+        author: attacker.team,
+      });
+    });
+  });
+  return map;
+}
+
+function solutionDiffs(target) {
+  const entries = attackEntries()
+    .filter((entry) => String(entry.target) === String(target))
+    .sort((a, b) => String(a.timestamp || '').localeCompare(String(b.timestamp || '')));
+  const byRevision = new Map();
+
+  entries.forEach((entry) => {
+    const revision = Number(entry.solution_rev ?? 0);
+    const current = byRevision.get(revision);
+    if (!current || String(entry.timestamp || '') >= String(current.timestamp || '')) {
+      byRevision.set(revision, entry);
+    }
+  });
+
+  const revisions = [...byRevision.keys()].sort((a, b) => a - b);
+  const diffs = [];
+
+  for (let index = 1; index < revisions.length; index += 1) {
+    const from = revisions[index - 1];
+    const to = revisions[index];
+    const before = defenseTestMap(byRevision.get(from));
+    const after = defenseTestMap(byRevision.get(to));
+    const changes = [];
+
+    after.forEach((test, path) => {
+      const old = before.get(path);
+      if (!old || Boolean(old.passed) === Boolean(test.passed)) return;
+      changes.push({ path, before: old, after: test });
+    });
+
+    diffs.push({ from, to, changes });
+  }
+
+  return diffs;
+}
+
+function outcomeLabel(test) {
+  return test?.passed ? 'пройден' : 'провал';
+}
+
+function renderSolutionDiffs(target, compact = false) {
+  const diffs = solutionDiffs(target);
+  if (!diffs.length) return '';
+  const changeCount = diffs.reduce((sum, diff) => sum + diff.changes.length, 0);
+
+  return `
+    <details class="solution-revisions${compact ? ' compact' : ''}">
+      <summary>Изменения решения <span class="count">${changeCount}</span></summary>
+      <div class="solution-diff-list">
+        ${diffs.map((diff) => `
+          <div class="solution-diff">
+            <div class="solution-diff-head">
+              <span class="revision-tag solution">защита</span>
+              <span>попытка ${diff.from + 1} → попытка ${diff.to + 1}</span>
+            </div>
+            ${diff.changes.length
+              ? `<ul class="solution-diff-items">${diff.changes.map((change) => `
+                  <li>
+                    <code>${esc(change.path)}</code>
+                    <span class="outcome fail">${outcomeLabel(change.before)}</span>
+                    <span class="muted">→</span>
+                    <span class="outcome pass">${outcomeLabel(change.after)}</span>
+                  </li>
+                `).join('')}</ul>`
+              : '<p class="muted">Результаты тестов не изменились.</p>'}
+          </div>
+        `).join('')}
+      </div>
+    </details>
+  `;
+}
+
+function formatSeconds(value) {
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds) || seconds <= 0) return '—';
+  return seconds < 1
+    ? `${(seconds * 1000).toFixed(1)} мс`
+    : `${seconds.toFixed(3)} с`;
+}
+
 function testChanges(previous, current) {
   const before = testMap(previous);
   const after = testMap(current);
@@ -421,9 +514,10 @@ function renderDefense() {
   const defense = entry.defense || { passed: 0, total: 0, held: false };
   const solutionRev = Number(entry.solution_rev ?? 0);
   const attackers = Array.isArray(entry.attackers) ? entry.attackers : [];
-  const attackRounds = attackers.length
-    ? Math.max(...attackers.map((attacker) => Number(attacker.revision ?? 0))) + 1
-    : 0;
+  const attackAttempts = attackers.reduce(
+    (sum, attacker) => sum + Number(attacker.revision ?? 0) + 1,
+    0
+  );
   const byTeam = new Map(attackers.map((attacker) => [String(attacker.team), attacker]));
   const failures = [];
   attackers.forEach((attacker) => {
@@ -483,10 +577,11 @@ function renderDefense() {
         <strong class="score"><b>${defense.passed ?? 0}</b><span>/${defense.total ?? 0}</span></strong>
         <span class="badge ${defense.held ? 'win' : ''}">${defense.held ? 'выстояла' : 'пробита'}</span>
       </article>
-      ${metric('Попыток решения', solutionRev + 1, 'включая начальную')}
-      ${metric('Попыток атаки', attackRounds, 'включая начальную')}
+      ${metric('Попыток решения', solutionRev + 1)}
+      ${metric('Попыток атаки', attackAttempts)}
       ${metric('Атакующих команд', attackers.length, `из ${TEAMS.length - 1}`)}
     </div>
+    ${renderSolutionDiffs(target)}
 
     <div class="panel-head">
       <h2>Атаки <span class="count">${defense.total ?? 0}</span></h2>
@@ -521,7 +616,7 @@ function renderMatrix() {
   TEAMS.forEach((defender) => {
     const entry = latest[String(defender)];
     const attempts = Number(entry?.solution_rev ?? 0);
-    rows += `<tr><th scope="row" class="matrix-defender"><span>${groupLabel(defender)}</span><small>попыток ${attempts + 1}</small></th>`;
+    rows += `<tr><th scope="row" class="matrix-defender"><span>${groupLabel(defender)}</span><small>попыток ${attempts + 1}</small>${renderSolutionDiffs(String(defender), true)}</th>`;
     TEAMS.forEach((attacker) => {
       const classes = ['cell'];
       if (defender === attacker) {
@@ -696,16 +791,11 @@ function renderResults() {
     const attackQuality = Math.round(Number(team.attack_quality ?? 0) * 100);
     const speedQuality = Math.round(Number(team.speed_quality ?? 0) * 100);
     const defenseAttempts = Array.isArray(team.defense_attempts) ? team.defense_attempts : [];
-    const attackByRevision = new Map();
-    (Array.isArray(team.attack_attempts) ? team.attack_attempts : []).forEach((attempt) => {
-      const revision = Number(attempt.revision ?? 0);
-      const current = attackByRevision.get(revision) || { revision, failed: 0, total: 0 };
-      current.failed += Number(attempt.failed ?? 0);
-      current.total += Number(attempt.total ?? 0);
-      attackByRevision.set(revision, current);
-    });
-    const attackAttempts = [...attackByRevision.values()].sort((a, b) => a.revision - b.revision);
+    const attackAttempts = (Array.isArray(team.attack_attempts) ? team.attack_attempts : [])
+      .slice()
+      .sort((a, b) => Number(a.target) - Number(b.target) || Number(a.revision) - Number(b.revision));
     const attemptLabel = (revision) => `попытка ${Number(revision ?? 0) + 1}`;
+    const speedValue = formatSeconds(team.avg_time);
     return `
       <article class="result-card ${isWinner ? 'winner' : ''}">
         <div class="result-top">
@@ -733,12 +823,11 @@ function renderResults() {
           <div>
             <span>Скорость</span>
             <strong>${speedQuality}%</strong>
-            <small>20% итогового балла</small>
+            <small>${speedValue} среднее · 20% балла</small>
           </div>
           <div>
             <span>Попыток решения / атак</span>
             <strong>${solutionRev + 1} / ${attackAttempts.length}</strong>
-            <small>включая начальную</small>
           </div>
         </div>
         <div class="attempt-breakdown">
@@ -758,19 +847,20 @@ function renderResults() {
           </div>
           <div class="attempt-group">
             <div class="attempt-head">
-              <span>Атака</span>
+              <span>Атака · по всем защитам</span>
               <span>${team.attack_points ?? 0}/${team.attack_total ?? 0} пробито</span>
             </div>
             <ul class="attempt-list">
               ${attackAttempts.map((attempt) => `
                 <li>
-                  <span>${attemptLabel(attempt.revision)}</span>
+                  <span>${esc(teamLabel(attempt.target))} · ${attemptLabel(attempt.revision)}</span>
                   <span>${attempt.failed ?? 0}/${attempt.total ?? 0} пробито</span>
                 </li>
               `).join('')}
             </ul>
           </div>
         </div>
+        <p class="attempt-note muted">Защита — своя, атака — по всем защитам.</p>
         <details class="revision-log">
           <summary>История изменений <span class="count">${history.length}</span></summary>
           ${history.length
@@ -814,9 +904,10 @@ function renderHistory() {
     const revisionTotal = revisionCount(entry);
     const solutionRev = Number(entry.solution_rev ?? 0);
     const attackers = Array.isArray(entry.attackers) ? entry.attackers : [];
-    const attackRounds = attackers.length
-      ? Math.max(...attackers.map((attacker) => Number(attacker.revision ?? 0))) + 1
-      : 0;
+    const attackAttempts = attackers.reduce(
+      (sum, attacker) => sum + Number(attacker.revision ?? 0) + 1,
+      0
+    );
     const revisions = [
       solutionRev > 0
         ? `<li class="battle-rev-row">
@@ -845,7 +936,7 @@ function renderHistory() {
               <span>${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</span>
               <span>Попыток решения: ${solutionRev + 1}</span>
               <span>Атакующих: ${attackers.length}</span>
-              <span>Попыток атаки: ${attackRounds}</span>
+              <span>Попыток атаки: ${attackAttempts}</span>
             </span>
           </div>
           <div class="history-side">
