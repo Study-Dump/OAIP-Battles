@@ -1,3 +1,135 @@
 {
-  "attacks": []
+  "attacks": [
+    {
+      "mode": "attack",
+      "branch": "attack-1",
+      "commit": "2d07cced4c452eea9b420d31c4f08d6921374588",
+      "target": "1",
+      "solution_rev": 0,
+      "attacks_rev": {
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "attackers": [
+        {
+          "team": "2",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "3\nМолоток;101;199.90;2\nГвозди;102;9.50;100\nПила;103;199.90;1\n",
+              "expected_output": "1549.70\nГвозди;102;9.50;100\nМолоток;101;199.90;2\nПила;103;199.90;1\n",
+              "time_sec": 0.0017,
+              "actual_output": "1549.70\nГвозди;102;9.50;100\nМолоток;101;199.90;2\nПила;103;199.90;1\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "01_basic",
+              "path": "attacks/team2/01_basic"
+            },
+            {
+              "skipped": false,
+              "input": "4\nНабор отверток;200;500.00;1\nКлюч;100;500.00;2\nМолоток;50;100.00;3\nГвоздь;150;0.50;10\n",
+              "expected_output": "1805.00\nГвоздь;150;0.50;10\nМолоток;50;100.00;3\nКлюч;100;500.00;2\nНабор отверток;200;500.00;1\n",
+              "time_sec": 0.0013,
+              "actual_output": "1805.00\nГвоздь;150;0.50;10\nМолоток;50;100.00;3\nКлюч;100;500.00;2\nНабор отверток;200;500.00;1\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "02_ties_and_spaces",
+              "path": "attacks/team2/02_ties_and_spaces"
+            }
+          ]
+        },
+        {
+          "team": "3",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "2\nТовар A;3;0.00;5\nТовар B;2;10.00;0\n",
+              "expected_output": "0.00\nТовар A;3;0.00;5\nТовар B;2;10.00;0\n",
+              "time_sec": 0.0012,
+              "actual_output": "0.00\nТовар A;3;0.00;5\nТовар B;2;10.00;0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "03_zero_values",
+              "path": "attacks/team3/03_zero_values"
+            }
+          ]
+        },
+        {
+          "team": "4",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "0\n",
+              "expected_output": "0.00\n",
+              "time_sec": 0.0011,
+              "actual_output": "0.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "04_zero_items",
+              "path": "attacks/team4/04_zero_items"
+            },
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "0.00\n",
+              "time_sec": 0.001,
+              "actual_output": "0.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "05_empty_input",
+              "path": "attacks/team4/05_empty_input"
+            }
+          ]
+        },
+        {
+          "team": "5",
+          "passed": 1,
+          "total": 1,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "3\nA;1;0.10;1\nB;2;0.20;1\nC;3;0.30;1\n",
+              "expected_output": "0.60\nA;1;0.10;1\nB;2;0.20;1\nC;3;0.30;1\n",
+              "time_sec": 0.001,
+              "actual_output": "0.60\nA;1;0.10;1\nB;2;0.20;1\nC;3;0.30;1\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "06_rounding",
+              "path": "attacks/team5/06_rounding"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 6,
+        "total": 6,
+        "ratio": 1.0,
+        "held": true
+      },
+      "id": "attack-1-2d07cce",
+      "timestamp": "2026-11-17T11:54:39.879720+00:00"
+    }
+  ]
 }
