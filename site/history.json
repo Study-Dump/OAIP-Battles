@@ -1,3 +1,159 @@
 {
-  "attacks": []
+  "attacks": [
+    {
+      "mode": "attack",
+      "branch": "attack-5",
+      "commit": "8265ccd2a53911f6e6cd692a2a3239140b2a3c57",
+      "target": "5",
+      "solution_rev": 0,
+      "attacks_rev": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "attackers": [
+        {
+          "team": "1",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "4\n0.5\nИванов;20;100;10\nПетров;21;90;0\nСидоров;22;80;20\nКозлов;23;70;10\n",
+              "expected_output": "3\nИванов;95.00\nПетров;90.00\nСидоров;70.00\n",
+              "time_sec": 0.0016,
+              "actual_output": "3\nИванов;95.00\nПетров;90.00\nСидоров;70.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_basic",
+              "path": "attacks/team1/01_basic"
+            },
+            {
+              "skipped": false,
+              "input": "0\n0.5\n",
+              "expected_output": "0\n",
+              "time_sec": 0.0011,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "06_zero_items",
+              "path": "attacks/team1/06_zero_items"
+            }
+          ]
+        },
+        {
+          "team": "2",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "4\n1.0\nПетров;20;100;10\nИванов;21;100;10\nСидоров;22;90;0\nАлексеев;23;100;10\n",
+              "expected_output": "3\nАлексеев;90.00\nИванов;90.00\nПетров;90.00\n",
+              "time_sec": 0.001,
+              "actual_output": "3\nАлексеев;90.00\nИванов;90.00\nПетров;90.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "02_rating_ties",
+              "path": "attacks/team2/02_rating_ties"
+            },
+            {
+              "skipped": false,
+              "input": "2\n0.5\nA;1;10;0\nB;2;5;2\n",
+              "expected_output": "2\nA;10.00\nB;4.00\n",
+              "time_sec": 0.001,
+              "actual_output": "2\nA;10.00\nB;4.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "03_fewer_than_three",
+              "path": "attacks/team2/03_fewer_than_three"
+            }
+          ]
+        },
+        {
+          "team": "3",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "3\n2.0\nA;30;10;10\nB;31;20;10\nC;32;30;10\n",
+              "expected_output": "3\nC;10.00\nB;0.00\nA;-10.00\n",
+              "time_sec": 0.001,
+              "actual_output": "3\nC;10.00\nB;0.00\nA;-10.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "04_negative_ratings",
+              "path": "attacks/team3/04_negative_ratings"
+            },
+            {
+              "skipped": false,
+              "input": "3\n0.25\nA;1;10;4\nB;2;10;3\nC;3;10;2\n",
+              "expected_output": "3\nC;9.50\nB;9.25\nA;9.00\n",
+              "time_sec": 0.001,
+              "actual_output": "3\nC;9.50\nB;9.25\nA;9.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "05_decimal_coefficient",
+              "path": "attacks/team3/05_decimal_coefficient"
+            }
+          ]
+        },
+        {
+          "team": "4",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "0\n",
+              "time_sec": 0.001,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "07_empty_input",
+              "path": "attacks/team4/07_empty_input"
+            },
+            {
+              "skipped": false,
+              "input": "4\n1.5\nАнна Смирнова;20;100;10\nБорис Петров;21;95;0\nВиктор Иванов;22;90;20\nГалина Орлова;23;85;10\n",
+              "expected_output": "3\nБорис Петров;95.00\nАнна Смирнова;85.00\nГалина Орлова;70.00\n",
+              "time_sec": 0.0011,
+              "actual_output": "3\nБорис Петров;95.00\nАнна Смирнова;85.00\nГалина Орлова;70.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "08_names_spaces",
+              "path": "attacks/team4/08_names_spaces"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 8,
+        "total": 8,
+        "ratio": 1.0,
+        "held": true
+      },
+      "id": "attack-5-8265ccd",
+      "timestamp": "2026-11-17T18:36:15.518853+00:00"
+    }
+  ]
 }
