@@ -248,6 +248,12 @@ a {
   background: var(--accent-soft);
 }
 
+.btn.compact {
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 0.72rem;
+}
+
 .btn.danger {
   border-color: rgba(255, 77, 125, 0.35);
   color: #ff9aac;
@@ -751,17 +757,22 @@ tbody tr:hover th {
   display: block;
 }
 
-.cell-time {
-  display: block;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-}
-
 .matrix th:not(:first-child) {
   text-align: center;
+}
+
+.matrix-defender span {
+  display: block;
+}
+
+.matrix-defender small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 
 .matrix td.good {
@@ -822,6 +833,11 @@ tbody tr:hover th {
 .swatch.bad {
   background: var(--danger);
   box-shadow: 0 0 8px rgba(255, 77, 125, 0.5);
+}
+
+.swatch.no-data {
+  border: 1px dashed var(--border-strong);
+  background: transparent;
 }
 
 
@@ -1121,9 +1137,9 @@ tbody tr:hover th {
   color: #ff9aac;
 }
 
-.attack-table td.time {
+.attack-table tr.no-attack th,
+.attack-table tr.no-attack td {
   color: var(--muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .eyebrow {
@@ -1199,6 +1215,10 @@ tbody tr:hover th {
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
   box-shadow: 0 0 22px rgba(61, 139, 255, 0.65);
   transition: width 0.35s ease;
+}
+
+.defense-head {
+  align-items: center;
 }
 
 .results-head {
