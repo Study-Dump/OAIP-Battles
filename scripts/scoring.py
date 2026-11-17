@@ -183,7 +183,9 @@ def build_scoreboard(history):
         stats["solution_rev"] = int((latest.get(str(team)) or {}).get("solution_rev", 0) or 0)
         stats["attack_revs"] = sum(
             int(attacker.get("revision", 0) or 0)
-            for attacker in (latest.get(str(team)) or {}).get("attackers") or []
+            for entry in latest.values()
+            for attacker in entry.get("attackers") or []
+            if str(attacker.get("team")) == str(team)
         )
         stats["defense_attempts"] = [
             stats["defense_attempts"][revision]
