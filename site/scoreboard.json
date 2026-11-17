@@ -1,7 +1,7 @@
 {
   "mode": "attack",
   "complete": true,
-  "updated": "2026-11-17T06:57:50.689558+00:00",
+  "updated": "2026-11-17T06:58:38.500302+00:00",
   "targets": [
     {
       "target": "1",
@@ -199,21 +199,21 @@
     {
       "target": "5",
       "branch": "attack-5",
-      "id": "attack-5-af1d60e",
-      "commit": "af1d60ec49b83e7e081b6645fd29bc91822d43a5",
-      "timestamp": "2026-11-17T06:20:23.164710+00:00",
+      "id": "attack-5-7e593c2",
+      "commit": "7e593c2ceea13c7b2ae2cf687f5fdc25cecb80c9",
+      "timestamp": "2026-11-17T06:58:38.500302+00:00",
       "solution_rev": 0,
       "attacks_rev": {
         "1": 0,
-        "2": 0,
+        "2": 1,
         "3": 0,
         "4": 0
       },
       "defense": {
         "passed": 8,
-        "total": 8,
-        "ratio": 1.0,
-        "held": true
+        "total": 9,
+        "ratio": 0.8889,
+        "held": false
       },
       "attackers": [
         {
@@ -226,9 +226,9 @@
         {
           "team": "2",
           "passed": 2,
-          "total": 2,
-          "failed": 0,
-          "revision": 0
+          "total": 3,
+          "failed": 1,
+          "revision": 1
         },
         {
           "team": "3",
@@ -282,17 +282,17 @@
       "defense_quality": 0.75,
       "defense_coverage": 0.75,
       "solution_rev": 1,
-      "attack_points": 0,
-      "attack_total": 8,
-      "attack_ratio": 0.0,
-      "attack_quality": 0.0,
+      "attack_points": 1,
+      "attack_total": 9,
+      "attack_ratio": 0.1111,
+      "attack_quality": 0.0833,
       "attack_coverage": 1.0,
-      "attack_revs": 1,
+      "attack_revs": 2,
       "avg_time": 0.0015,
       "speed_quality": 0.7278,
-      "score": 52.06,
+      "score": 54.56,
       "defense_points": 7,
-      "total_points": 7
+      "total_points": 8
     },
     {
       "team": "3",
@@ -344,11 +344,11 @@
       "team": "5",
       "defense": {
         "passed": 8,
-        "total": 8,
-        "ratio": 1.0,
-        "held": true
+        "total": 9,
+        "ratio": 0.8889,
+        "held": false
       },
-      "defense_quality": 1.0,
+      "defense_quality": 0.9167,
       "defense_coverage": 1.0,
       "solution_rev": 0,
       "attack_points": 0,
@@ -357,9 +357,9 @@
       "attack_quality": 0.0,
       "attack_coverage": 0.75,
       "attack_revs": 2,
-      "avg_time": 0.0012,
-      "speed_quality": 0.9271,
-      "score": 68.54,
+      "avg_time": 0.0179,
+      "speed_quality": 0.062,
+      "score": 47.07,
       "defense_points": 8,
       "total_points": 8
     }
