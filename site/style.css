@@ -830,6 +830,120 @@ tbody tr:hover th {
   background: var(--surface);
 }
 
+.battle-card {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  transition: background 0.15s ease;
+}
+
+.battle-card:last-child {
+  border-bottom: 0;
+}
+
+.battle-card:hover {
+  background: var(--surface-2);
+}
+
+.battle-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 18px 24px;
+}
+
+.battle-title {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.battle-title strong {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.battle-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.battle-revisions {
+  border-top: 1px dashed rgba(120, 170, 255, 0.16);
+}
+
+.battle-revisions summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 11px 24px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  list-style: none;
+  cursor: pointer;
+}
+
+.battle-revisions summary::-webkit-details-marker {
+  display: none;
+}
+
+.battle-revisions summary::before {
+  content: "+";
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+.battle-revisions[open] summary::before {
+  content: "−";
+}
+
+.battle-revisions[open] summary {
+  color: var(--text);
+}
+
+.battle-rev-body {
+  padding: 0 24px 16px;
+}
+
+.battle-rev-body > p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.battle-rev-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.battle-rev-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(120, 170, 255, 0.1);
+  font-size: 0.82rem;
+}
+
+.battle-rev-row:first-child {
+  border-top: 0;
+}
+
 .history-row {
   display: flex;
   flex-wrap: wrap;

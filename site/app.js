@@ -82,19 +82,20 @@ function attackEntries() {
   return Array.isArray(state.history.attacks) ? state.history.attacks : [];
 }
 
-function hasRevisions(entry) {
+function revisionCount(entry) {
   const solution = Number(entry.solution_rev ?? 0);
-  const attacks = Object.values(entry.attacks_rev || {}).some(
-    (value) => Number(value) > 0
+  const attacks = Object.values(entry.attacks_rev || {}).reduce(
+    (sum, value) => sum + Number(value || 0),
+    0
   );
-  return solution > 0 || attacks;
+  return solution + attacks;
 }
 
-function revisionEntries() {
+function battleEntries() {
   return attackEntries()
     .filter((entry) => {
       const target = String(entry.target || '');
-      return TEAMS.some((team) => String(team) === target) && hasRevisions(entry);
+      return TEAMS.some((team) => String(team) === target);
     })
     .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
 }
@@ -369,10 +370,13 @@ function renderMatrix() {
 
 function rankKey(team) {
   return [
-    Number(team.total_points ?? 0),
-    team.defense?.held ? 1 : 0,
+    Number(team.score ?? 0),
+    Number(team.defense_quality ?? 0),
+    Number(team.attack_quality ?? 0),
+    Number(team.speed_quality ?? 0),
     -Number(team.solution_rev ?? 0),
-    Number(team.attack_revs ?? 0),
+    -Number(team.attack_revs ?? 0),
+    -Number(team.team ?? 0),
   ];
 }
 
@@ -492,6 +496,9 @@ function renderResults() {
     const history = teamRevisionHistory(team.team);
     const isWinner = winner === String(team.team);
     const status = defense.held ? 'защита выстояла' : 'защита пробита';
+    const defenseQuality = Math.round(Number(team.defense_quality ?? 0) * 100);
+    const attackQuality = Math.round(Number(team.attack_quality ?? 0) * 100);
+    const speedQuality = Math.round(Number(team.speed_quality ?? 0) * 100);
     return `
       <article class="result-card ${isWinner ? 'winner' : ''}">
         <div class="result-top">
@@ -501,28 +508,30 @@ function renderResults() {
             <span class="badge ${defense.held ? 'win' : ''}">${status}</span>
           </div>
           <div class="result-points">
-            <strong>${team.total_points ?? 0}</strong>
-            <span>очков</span>
+            <strong>${Number(team.score ?? 0).toFixed(2)}</strong>
+            <span>баллов</span>
           </div>
         </div>
         <div class="result-stats">
           <div>
-            <span>Держал тестов</span>
-            <strong>${defense.passed ?? 0}/${defense.total ?? 0}</strong>
+            <span>Защита</span>
+            <strong>${defenseQuality}%</strong>
+            <small>${defense.passed ?? 0}/${defense.total ?? 0} тестов · покрытие ${Math.round(Number(team.defense_coverage ?? 0) * 100)}%</small>
+          </div>
+          <div>
+            <span>Атака</span>
+            <strong>${attackQuality}%</strong>
+            <small>${team.attack_points ?? 0}/${team.attack_total ?? 0} пробито · покрытие ${Math.round(Number(team.attack_coverage ?? 0) * 100)}%</small>
           </div>
           <div>
             <span>Ср. время</span>
-            <strong>${fmtMs(meanTime(defenseTestsFor(team.team)))}</strong>
+            <strong>${fmtMs(team.avg_time ?? meanTime(defenseTestsFor(team.team)))}</strong>
+            <small>скорость ${speedQuality}%</small>
           </div>
           <div>
             <span>Всего ревизий</span>
             <strong>${revisions}</strong>
             <small>решение ${solutionRev} · атаки ${attackRevs}</small>
-          </div>
-          <div>
-            <span>Атаки</span>
-            <strong>${team.attack_points ?? 0}/${team.attack_total ?? 0}</strong>
-            <small>тестов пробито</small>
           </div>
         </div>
         <details class="revision-log">
@@ -544,7 +553,7 @@ function renderResults() {
         <span class="eyebrow">Итоги</span>
         <h2>Результаты</h2>
       </div>
-      <p class="muted">${winner ? `Победитель · ${esc(teamLabel(winner))}` : 'Победитель не определён'}</p>
+      <p class="muted">${winner ? `Победитель · ${esc(teamLabel(winner))}` : 'Победитель не определён'} · балл: 50% защита, 30% атаки, 20% скорость</p>
     </div>
     ${winner ? '' : '<p class="results-tie">Основные показатели лидеров совпали — ничья.</p>'}
     <div class="results-grid">${cards}</div>
@@ -552,11 +561,11 @@ function renderResults() {
 }
 
 function renderHistory() {
-  const all = revisionEntries();
+  const all = battleEntries();
   if (!all.length) {
     els.history.innerHTML = emptyState(
-      'Ревизий пока нет',
-      'Показаны только ревизии после старта батлов.'
+      'Батлов пока нет',
+      'Здесь появятся все батлы. Внутри карточки можно раскрыть ревизии.'
     );
     return;
   }
@@ -565,29 +574,56 @@ function renderHistory() {
     const target = String(entry.target);
     const defense = entry.defense || {};
     const status = defense.held ? 'выстоял' : 'пробит';
-    const attackRevs = Object.values(entry.attacks_rev || {}).reduce(
-      (sum, value) => sum + Number(value || 0),
-      0
-    );
+    const revisionTotal = revisionCount(entry);
+    const attackers = Array.isArray(entry.attackers) ? entry.attackers : [];
+    const revisions = [
+      Number(entry.solution_rev ?? 0) > 0
+        ? `<li class="battle-rev-row">
+            <span class="revision-tag solution">решение</span>
+            <span class="revision-main">${esc(teamLabel(target))} · ревизия ${Number(entry.solution_rev)}</span>
+          </li>`
+        : '',
+      ...attackers
+        .filter((attacker) => Number(attacker.revision ?? 0) > 0)
+        .map((attacker) => `
+          <li class="battle-rev-row">
+            <span class="revision-tag attack">атака</span>
+            <span class="revision-main">${esc(teamLabel(attacker.team))} · ревизия ${Number(attacker.revision)}</span>
+            <span class="revision-meta">${attacker.failed ?? 0}/${attacker.total ?? 0} пробито</span>
+          </li>
+        `),
+    ].join('');
+
     return `
-      <article class="history-row">
-        <div class="history-main">
-          <strong>attack-${esc(target)}</strong>
-          <span class="muted">${fmtDate(entry.timestamp)}</span>
-          <span class="muted">${esc(teamLabel(target))}: ${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</span>
-          <span class="muted">commit ${esc(String(entry.commit || '').slice(0, 7))} · решение ${entry.solution_rev ?? 0} · атаки ${attackRevs}</span>
+      <article class="battle-card">
+        <div class="battle-head">
+          <div class="battle-title">
+            <strong>Батл · ${esc(teamLabel(target))}</strong>
+            <span class="battle-meta">
+              <span>${fmtDate(entry.timestamp)}</span>
+              <span>${esc(teamLabel(target))}: ${defense.passed ?? 0}/${defense.total ?? 0} · ${status}</span>
+              <span>commit ${esc(String(entry.commit || '').slice(0, 7))}</span>
+            </span>
+          </div>
+          <div class="history-side">
+            <span class="badge ${defense.held ? 'win' : ''}">${status}</span>
+            <button type="button" class="btn" data-open="${esc(target)}">Открыть</button>
+          </div>
         </div>
-        <div class="history-side">
-          <span class="badge ${defense.held ? 'win' : ''}">${status}</span>
-          <button type="button" class="btn" data-open="${esc(target)}">Открыть</button>
-        </div>
+        <details class="battle-revisions">
+          <summary>Ревизии <span class="count">${revisionTotal}</span></summary>
+          <div class="battle-rev-body">
+            ${revisionTotal ? `<ul class="battle-rev-list">${revisions}</ul>` : '<p class="muted">Стартовый батл — ревизий после него пока нет.</p>'}
+          </div>
+        </details>
       </article>
     `;
   }).join('');
 
   els.history.innerHTML = `
     <div class="panel-head">
-      <h2>История ревизий <span class="count">${all.length}</span></h2>
+      <h2>История батлов <span class="count">${all.length}</span></h2>
+      <p class="muted">Раскройте карточку батла, чтобы посмотреть ревизии.</p>
     </div>
     <div class="history-list">${rows}</div>
   `;
