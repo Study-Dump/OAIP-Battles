@@ -84,8 +84,8 @@ function attackEntries() {
 
 function revisionCount(entry) {
   const solution = Number(entry.solution_rev ?? 0);
-  const attacks = Object.values(entry.attacks_rev || {}).reduce(
-    (sum, value) => sum + Number(value || 0),
+  const attacks = (entry.attackers || []).reduce(
+    (sum, attacker) => sum + Number(attacker.revision ?? 0),
     0
   );
   return solution + attacks;
