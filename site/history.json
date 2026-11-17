@@ -845,6 +845,140 @@
       },
       "id": "attack-1-86ef806",
       "timestamp": "2026-11-17T06:55:56.550583+00:00"
+    },
+    {
+      "mode": "attack",
+      "branch": "attack-2",
+      "commit": "0b95ca577b13e85190acc8bf76f24541a3431fbb",
+      "target": "2",
+      "solution_rev": 1,
+      "attacks_rev": {
+        "1": 0,
+        "3": 0,
+        "4": 1,
+        "5": 1
+      },
+      "attackers": [
+        {
+          "team": "1",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "4\nМосква\nМосква;12;8;30;450.00\nСанкт-Петербург;7;9;10;500.00\nМосква;5;8;30;400.00\nМосква;3;7;5;300.00\n",
+              "expected_output": "3\nМосква;3;07:05;300.00\nМосква;5;08:30;400.00\nМосква;12;08:30;450.00\n",
+              "time_sec": 0.0017,
+              "actual_output": "3\nМосква;3;07:05;300.00\nМосква;5;08:30;400.00\nМосква;12;08:30;450.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_basic",
+              "path": "attacks/team1/01_basic"
+            },
+            {
+              "skipped": false,
+              "input": "2\nКазань\nМосква;1;10;0;100.00\nСочи;2;12;30;200.00\n",
+              "expected_output": "0\n",
+              "time_sec": 0.0021,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "02_no_matches",
+              "path": "attacks/team1/02_no_matches"
+            }
+          ]
+        },
+        {
+          "team": "3",
+          "passed": 3,
+          "total": 3,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "3\nСочи\nСочи;10;12;0;500.00\nСочи;2;12;0;450.00\nСочи;7;11;59;400.00\n",
+              "expected_output": "3\nСочи;7;11:59;400.00\nСочи;2;12:00;450.00\nСочи;10;12:00;500.00\n",
+              "time_sec": 0.0014,
+              "actual_output": "3\nСочи;7;11:59;400.00\nСочи;2;12:00;450.00\nСочи;10;12:00;500.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "03_time_ties",
+              "path": "attacks/team3/03_time_ties"
+            },
+            {
+              "skipped": false,
+              "input": "2\nОмск\nОмск;1;0;0;0.00\nОмск;2;23;59;999.99\n",
+              "expected_output": "2\nОмск;1;00:00;0.00\nОмск;2;23:59;999.99\n",
+              "time_sec": 0.0013,
+              "actual_output": "2\nОмск;1;00:00;0.00\nОмск;2;23:59;999.99\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "04_leading_zeros",
+              "path": "attacks/team3/04_leading_zeros"
+            },
+            {
+              "skipped": false,
+              "input": "0\nМосква\n",
+              "expected_output": "0\n",
+              "time_sec": 0.0012,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "05_zero_items",
+              "path": "attacks/team3/05_zero_items"
+            }
+          ]
+        },
+        {
+          "team": "4",
+          "passed": 2,
+          "total": 2,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "2\nНижний Новгород\nНижний Новгород;8;9;5;100.00\nНижний Новгород;9;9;5;50.00\n",
+              "expected_output": "2\nНижний Новгород;8;09:05;100.00\nНижний Новгород;9;09:05;50.00\n",
+              "time_sec": 0.0013,
+              "actual_output": "2\nНижний Новгород;8;09:05;100.00\nНижний Новгород;9;09:05;50.00\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "06_destination_spaces",
+              "path": "attacks/team4/06_destination_spaces"
+            },
+            {
+              "skipped": false,
+              "input": "2\nМосква\nМосква;12;8;30;450.00\nМосква;oops;9;0;100.00\n",
+              "expected_output": "",
+              "time_sec": 0.0017,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "08_invalid_garbage",
+              "path": "attacks/team4/08_invalid_garbage"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 7,
+        "total": 7,
+        "ratio": 1.0,
+        "held": true
+      },
+      "id": "attack-2-0b95ca5",
+      "timestamp": "2026-11-17T06:56:28.860733+00:00"
     }
   ]
 }
