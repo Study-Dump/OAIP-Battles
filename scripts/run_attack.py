@@ -8,9 +8,9 @@ import re
 import subprocess
 import sys
 
+from config import load_config
 from runner import run_test
 
-TEAMS = (1, 2, 3, 4, 5)
 TEST_NAME = re.compile(r"^(\d+)_.+$")
 
 
@@ -18,7 +18,7 @@ def git(*args):
     return subprocess.check_output(["git", *args], text=True).strip()
 
 
-def read_revisions(path, target):
+def read_revisions(path, target, teams):
     data = {}
     if path:
         with open(path, encoding="utf-8") as f:
@@ -27,13 +27,13 @@ def read_revisions(path, target):
     raw_attacks = data.get("attacks_rev", data.get("attacks", {})) or {}
     attacks_rev = {
         str(team): int(raw_attacks.get(str(team), raw_attacks.get(team, 0)) or 0)
-        for team in TEAMS
-        if team != target
+        for team in teams
+        if str(team) != str(target)
     }
     return solution_rev, attacks_rev
 
 
-def collect_tests(team_dir, team):
+def collect_tests(team_dir, team, max_tests):
     if not os.path.isdir(team_dir):
         return []
 
@@ -50,6 +50,10 @@ def collect_tests(team_dir, team):
         tests.append((int(match.group(1)), name, path))
 
     tests.sort(key=lambda item: (item[0], item[1]))
+    if len(tests) > max_tests:
+        raise SystemExit(
+            f"team{team}: максимум {max_tests} тестов на защиту, получено {len(tests)}"
+        )
     return [(name, path) for _, name, path in tests]
 
 
@@ -57,22 +61,31 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--solution", required=True, help="скомпилированное решение")
     parser.add_argument("--attacks-dir", default="attacks")
-    parser.add_argument("--target", required=True, type=int, choices=TEAMS)
+    parser.add_argument("--target", required=True)
     parser.add_argument("--revisions", help="JSON с solution_rev/attacks_rev")
+    parser.add_argument("--config", help="путь к config.json (по умолчанию в корне)")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
-    solution_rev, attacks_rev = read_revisions(args.revisions, args.target)
+    cfg = load_config(args.config)
+    teams = cfg["team_ids"]
+    args.target = str(args.target)
+    if args.target not in teams:
+        parser.error(
+            f"target {args.target} отсутствует в config.json; команды: {', '.join(teams)}"
+        )
+
+    solution_rev, attacks_rev = read_revisions(args.revisions, args.target, teams)
     attackers = []
     total_passed = 0
     total_tests = 0
 
-    for team in TEAMS:
-        if team == args.target:
+    for team in teams:
+        if str(team) == args.target:
             continue
 
         team_dir = os.path.join(args.attacks_dir, f"team{team}")
-        tests = collect_tests(team_dir, team)
+        tests = collect_tests(team_dir, team, cfg["max_tests_per_team"])
         if not tests:
             print(f"team{team}: нет тестов, пропуск", file=sys.stderr)
             continue

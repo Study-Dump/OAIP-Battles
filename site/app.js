@@ -1,7 +1,13 @@
-const DEFAULT_REPO = 'Study-Dump/OAIP-Battles-IEF';
+const DEFAULT_CONFIG = {
+  title: 'OAIP Battles',
+  repository: 'Study-Dump/OAIP-Battles',
+  teams: ['1', '2', '3', '4', '5'],
+};
 const REPO_PATTERN = /^[\w.-]+\/[\w.-]+$/;
-const GROUP_PREFIX = '67810';
-const TEAMS = [1, 2, 3, 4, 5];
+let TEAMS = [];
+let TEAM_LABELS = new Map();
+let TEAM_ORDER = new Map();
+let repo = DEFAULT_CONFIG.repository;
 
 const REASON_LABELS = {
   timeout: 'таймаут',
@@ -28,7 +34,34 @@ const els = {
   clear: document.getElementById('clear-btn'),
 };
 
-let repo = DEFAULT_REPO;
+function normalizeTeams(raw) {
+  const items = Array.isArray(raw) && raw.length ? raw : DEFAULT_CONFIG.teams;
+  return items.map((item, index) => {
+    if (item == null || typeof item !== 'object') {
+      const value = String(item ?? index + 1);
+      return { id: value, group: value };
+    }
+    const id = String(item.id ?? item.team ?? index + 1);
+    return { id, group: String(item.group ?? item.label ?? id) };
+  });
+}
+
+function applyConfig(raw) {
+  const source = raw && typeof raw === 'object' ? raw : {};
+  const teams = normalizeTeams(source.teams);
+  TEAMS = teams.map((team) => team.id);
+  TEAM_LABELS = new Map(teams.map((team) => [team.id, team.group]));
+  TEAM_ORDER = new Map(TEAMS.map((team, index) => [team, index]));
+  if (REPO_PATTERN.test(String(source.repository || ''))) {
+    repo = String(source.repository);
+  }
+  const title = String(source.title || DEFAULT_CONFIG.title);
+  document.title = title;
+  const heading = document.querySelector('.brand h1');
+  if (heading) heading.textContent = title;
+  const repoLink = document.getElementById('repo-link');
+  if (repoLink) repoLink.href = repoUrl();
+}
 
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
@@ -41,13 +74,17 @@ function esc(value) {
 }
 
 function groupLabel(number) {
-  return `${GROUP_PREFIX}${number}`;
+  return teamLabel(number);
 }
 
 function teamLabel(team) {
   if (team == null || team === '') return '—';
   const value = String(team);
-  return /^[1-5]$/.test(value) ? groupLabel(value) : value;
+  return TEAM_LABELS.get(value) || value;
+}
+
+function teamIndex(team) {
+  return TEAM_ORDER.has(String(team)) ? TEAM_ORDER.get(String(team)) : TEAMS.length;
 }
 
 function repoUrl(path = '') {
@@ -90,7 +127,9 @@ function latestEntries() {
 }
 
 function availableTargets() {
-  return Object.keys(latestEntries()).sort((a, b) => Number(a) - Number(b));
+  return Object.keys(latestEntries()).sort(
+    (a, b) => teamIndex(a) - teamIndex(b) || a.localeCompare(b)
+  );
 }
 
 function selectedEntry() {
@@ -502,9 +541,11 @@ function renderFailure(test, target, entry) {
 function renderDefense() {
   const entry = selectedEntry();
   if (!entry) {
+    const first = TEAMS[0] || '1';
+    const last = TEAMS[TEAMS.length - 1] || first;
     els.defense.innerHTML = emptyState(
       'Защит пока нет',
-      'Создайте ветку <code>attack-1</code> … <code>attack-5</code> и добавьте решение и атаки.',
+      `Создайте ветку <code>attack-${esc(first)}</code> … <code>attack-${esc(last)}</code> и добавьте решение и атаки.`,
       repoUrl('/branches')
     );
     return;
@@ -792,7 +833,7 @@ function renderResults() {
     const defenseAttempts = Array.isArray(team.defense_attempts) ? team.defense_attempts : [];
     const attackAttempts = (Array.isArray(team.attack_attempts) ? team.attack_attempts : [])
       .slice()
-      .sort((a, b) => Number(a.target) - Number(b.target) || Number(a.revision) - Number(b.revision));
+      .sort((a, b) => teamIndex(a.target) - teamIndex(b.target) || Number(a.revision) - Number(b.revision));
     const attemptLabel = (revision) => `попытка ${Number(revision ?? 0) + 1}`;
     const speedValue = formatSeconds(team.avg_time);
     return `
@@ -972,17 +1013,12 @@ function setTab(name) {
 }
 
 async function load() {
-  const [scoreboard, historyData, repoData] = await Promise.all([
+  const [scoreboard, historyData, configData] = await Promise.all([
     fetchJson('scoreboard.json', null, true),
     fetchJson('history.json', { attacks: [] }),
-    fetchJson('repo.json', null, true),
+    fetchJson('config.json', null, true),
   ]);
-
-  if (repoData && REPO_PATTERN.test(repoData.repository || '')) {
-    repo = repoData.repository;
-    const repoLink = document.getElementById('repo-link');
-    if (repoLink) repoLink.href = repoUrl();
-  }
+  applyConfig(configData);
 
   state.scoreboard = scoreboard;
   state.history = historyData && Array.isArray(historyData.attacks)
@@ -991,7 +1027,7 @@ async function load() {
 
   const targets = availableTargets();
   const fromHash = decodeURIComponent(location.hash.slice(1));
-  const hashTarget = fromHash.match(/^attack-([1-5])$/)?.[1];
+  const hashTarget = fromHash.match(/^attack-(.+)$/)?.[1];
   const hashBattle = fromHash.match(/^battle-(.+)$/)?.[1];
   const battle = hashBattle && attackEntries().find((entry) => entry.id === hashBattle);
   const latest = latestEntries();
@@ -1044,8 +1080,8 @@ els.history.addEventListener('click', (event) => {
 
 window.addEventListener('hashchange', () => {
   const hash = decodeURIComponent(location.hash.slice(1));
-  const target = hash.match(/^attack-([1-5])$/)?.[1];
-  if (target && latestEntries()[target]) {
+  const target = hash.match(/^attack-(.+)$/)?.[1];
+  if (target && TEAMS.includes(target) && latestEntries()[target]) {
     state.selectedTarget = target;
     state.selectedEntryId = null;
     els.select.value = target;

@@ -2,21 +2,17 @@
 
 from statistics import mean
 
-TEAMS = (1, 2, 3, 4, 5)
-OTHER_TEAMS = {
-    str(team): tuple(str(other) for other in TEAMS if other != team)
-    for team in TEAMS
-}
-DEFENSE_WEIGHT = 50
-ATTACK_WEIGHT = 30
-SPEED_WEIGHT = 20
+try:
+    from config import load_config
+except ImportError:
+    from scripts.config import load_config
 
 
-def latest_by_target(history):
+def latest_by_target(history, other_teams):
     latest = {}
     for entry in history.get("attacks", []):
         target = str(entry.get("target", ""))
-        if target not in OTHER_TEAMS:
+        if target not in other_teams:
             continue
         current = latest.get(target)
         if current is None or entry.get("timestamp", "") >= current.get("timestamp", ""):
@@ -54,16 +50,25 @@ def score_key(team):
         team["speed_quality"],
         -team["solution_rev"],
         -team["attack_revs"],
-        -int(team["team"]),
+        -int(team.get("order", 0)),
     )
 
 
-def build_scoreboard(history):
-    latest = latest_by_target(history)
+def build_scoreboard(history, config=None):
+    cfg = config or load_config()
+    teams = cfg["team_ids"]
+    weights = cfg["scoring"]
+    other_teams = {
+        str(team): tuple(str(other) for other in teams if str(other) != str(team))
+        for team in teams
+    }
+    order = {str(team): index for index, team in enumerate(teams)}
+    latest = latest_by_target(history, other_teams)
     targets = []
     team_stats = {
         str(team): {
             "team": str(team),
+            "order": index,
             "defense": {
                 "passed": 0,
                 "total": 0,
@@ -87,7 +92,7 @@ def build_scoreboard(history):
             "speed_quality": 0.0,
             "score": 0.0,
         }
-        for team in TEAMS
+        for index, team in enumerate(teams)
     }
 
     for entry in sorted(
@@ -95,7 +100,7 @@ def build_scoreboard(history):
         key=lambda entry: (entry.get("timestamp", ""), entry.get("id", "")),
     ):
         target = str(entry.get("target", ""))
-        if target not in OTHER_TEAMS:
+        if target not in other_teams:
             continue
         defense = entry.get("defense") or {}
         solution_rev = int(entry.get("solution_rev", 0) or 0)
@@ -137,7 +142,7 @@ def build_scoreboard(history):
             avg_times.append(stats["avg_time"])
     fastest = min(avg_times) if avg_times else None
 
-    for target in sorted(latest, key=int):
+    for target in sorted(latest, key=lambda item: order.get(item, len(order))):
         entry = latest[target]
         defense = entry.get("defense") or {}
         attackers = entry.get("attackers") or []
@@ -150,7 +155,7 @@ def build_scoreboard(history):
             "solution_rev": int(entry.get("solution_rev", 0) or 0),
             "attacks_rev": {
                 str(team): int((entry.get("attacks_rev") or {}).get(str(team), 0) or 0)
-                for team in TEAMS
+                for team in teams
                 if str(team) != target
             },
             "defense": {
@@ -172,7 +177,7 @@ def build_scoreboard(history):
         }
         targets.append(summary)
 
-    for team in TEAMS:
+    for team in teams:
         stats = team_stats[str(team)]
         stats["defense"] = {
             "passed": int((latest.get(str(team)) or {}).get("defense", {}).get("passed", 0) or 0),
@@ -207,24 +212,24 @@ def build_scoreboard(history):
         )
         stats["defense_coverage"] = sum(
             1
-            for opponent in OTHER_TEAMS[str(team)]
+            for opponent in other_teams[str(team)]
             if any(
                 attacker.get("team") == opponent and attacker.get("total")
                 for entry in history.get("attacks", [])
                 if str(entry.get("target", "")) == str(team)
                 for attacker in entry.get("attackers") or []
             )
-        ) / len(OTHER_TEAMS[str(team)])
+        ) / len(other_teams[str(team)])
         stats["attack_coverage"] = sum(
             1
-            for target in OTHER_TEAMS[str(team)]
+            for target in other_teams[str(team)]
             if any(
                 attacker_record(entry, team)
                 and (attacker_record(entry, team) or {}).get("total")
                 for entry in history.get("attacks", [])
                 if str(entry.get("target", "")) == target
             )
-        ) / len(OTHER_TEAMS[str(team)])
+        ) / len(other_teams[str(team)])
         stats["attack_ratio"] = (
             stats["attack_points"] / stats["attack_total"]
             if stats["attack_total"]
@@ -233,16 +238,16 @@ def build_scoreboard(history):
         avg = stats["avg_time"]
         stats["speed_quality"] = min(1.0, fastest / avg) if avg and fastest else 0.0
         stats["score"] = round(
-            DEFENSE_WEIGHT * stats["defense_quality"]
-            + ATTACK_WEIGHT * stats["attack_quality"]
-            + SPEED_WEIGHT * stats["speed_quality"],
+            weights["defense"] * stats["defense_quality"]
+            + weights["attack"] * stats["attack_quality"]
+            + weights["speed"] * stats["speed_quality"],
             2,
         )
 
-    teams = []
-    for team in TEAMS:
+    ranked_teams = []
+    for team in teams:
         stats = team_stats[str(team)]
-        teams.append(
+        ranked_teams.append(
             {
                 **stats,
                 "defense_points": stats["defense_passed"],
@@ -275,10 +280,10 @@ def build_scoreboard(history):
             }
         )
 
-    complete = len(latest) == len(TEAMS)
+    complete = len(latest) == len(teams)
     winner = None
     if complete:
-        ranked = sorted(teams, key=score_key, reverse=True)
+        ranked = sorted(ranked_teams, key=score_key, reverse=True)
         if len(ranked) > 1 and score_key(ranked[0]) != score_key(ranked[1]):
             winner = ranked[0]["team"]
 
@@ -288,11 +293,11 @@ def build_scoreboard(history):
         "complete": complete,
         "updated": max(timestamps) if timestamps else None,
         "targets": targets,
-        "teams": teams,
+        "teams": ranked_teams,
         "winner": winner,
         "scoring": {
-            "defense_weight": DEFENSE_WEIGHT,
-            "attack_weight": ATTACK_WEIGHT,
-            "speed_weight": SPEED_WEIGHT,
+            "defense_weight": weights["defense"],
+            "attack_weight": weights["attack"],
+            "speed_weight": weights["speed"],
         },
     }

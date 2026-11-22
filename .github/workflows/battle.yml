@@ -21,20 +21,39 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Fetch main history
-        run: git fetch origin main --no-tags
-
-      - name: Parse attack-x
+      - name: Fetch main history and config
         run: |
           set -euo pipefail
-          branch="${GITHUB_REF_NAME}"
-          if [[ ! "$branch" =~ ^attack-([1-5])$ ]]; then
-            echo "::error::Branch must be named attack-1 ... attack-5 (got: $branch)"
-            exit 1
-          fi
-          target="${BASH_REMATCH[1]}"
-          echo "TARGET=$target" >> "$GITHUB_ENV"
-          echo "Target: team$target"
+          git fetch origin main --no-tags
+          git show origin/main:config.json > "$RUNNER_TEMP/config.json"
+          echo "OAIP_CONFIG=$RUNNER_TEMP/config.json" >> "$GITHUB_ENV"
+
+      - name: Parse attack branch
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+          import sys
+
+          from scripts.config import load_config
+
+          cfg = load_config(os.environ["OAIP_CONFIG"])
+          branch = os.environ["BRANCH"]
+          match = re.fullmatch(r"attack-(.+)", branch)
+          target = match.group(1) if match else None
+          if target not in cfg["team_ids"]:
+              names = ", ".join(f"attack-{team}" for team in cfg["team_ids"])
+              print(f"::error::Branch must be one of: {names} (got: {branch})")
+              sys.exit(1)
+          label = cfg["team_labels"].get(target, target)
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
+              f.write(f"TARGET={target}\n")
+              f.write(f"TARGET_LABEL={label}\n")
+          print(f"Target: attack-{target} ({label})")
+          PY
 
           if [[ ! -f solution.cpp ]]; then
             echo "::error::solution.cpp not found in branch root"
