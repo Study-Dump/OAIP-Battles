@@ -46,18 +46,18 @@
 teamX/
   solution.cpp
   attacks/
-    teamTarget/            # атаки команды X на команду teamTarget
+    attacksY/              # атаки команды X на команду Y
       0X_описание/
         input.txt
         expected_output.txt
 ```
 
-В личной папке команды `teamX` вложенная папка — это цель атак. После переноса в ветку имя папки становится автором: атаки команды X против Y лежат в `attack-Y/attacks/teamX/`.
+Внутри `attacks/` папки называются `attacks<id>` по цели атак. Автор — команда, чья папка `teamX`; поэтому внутри всех тестов в `attacksY` автор один и тот же.
 
 Преподаватель раскладывает материалы так:
 
 - `teamX/solution.cpp` → `attack-X/solution.cpp`;
-- `teamX/attacks/teamTarget/*` → `attack-Y/attacks/teamX/*`, где `Y` — id цели атак.
+- `teamX/attacks/attacksY/*` → `attack-Y/attacks/teamX/*`.
 
 После раскладки папка внутри `attacks/` по-прежнему означает автора атак, а не цель.
 
@@ -79,14 +79,14 @@ teamX/
 team3/                       # группа 678103
   solution.cpp
   attacks/
-    team1/                   # атаки team3 на группу 678101
+    attacks1/                # атаки team3 на группу 678101
       01_обычный_ввод/
         input.txt
         expected_output.txt
       02_граничный_случай/
         input.txt
         expected_output.txt
-    team4/                   # атаки team3 на группу 678104
+    attacks4/                # атаки team3 на группу 678104
       01_большие_числа/
         input.txt
         expected_output.txt
