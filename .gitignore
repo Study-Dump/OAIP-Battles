@@ -40,6 +40,7 @@ sol_b
 partial_*.json
 
 # Generated at Pages deploy time
+/site/config.json
 /site/repo.json
 
 # Python

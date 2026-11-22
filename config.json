@@ -1,0 +1,17 @@
+{
+  "title": "OAIP Battles",
+  "repository": "Study-Dump/OAIP-Battles",
+  "teams": [
+    { "id": "1", "group": "678101" },
+    { "id": "2", "group": "678102" },
+    { "id": "3", "group": "678103" },
+    { "id": "4", "group": "678104" },
+    { "id": "5", "group": "678105" }
+  ],
+  "max_tests_per_team": 5,
+  "scoring": {
+    "defense": 50,
+    "attack": 30,
+    "speed": 20
+  }
+}

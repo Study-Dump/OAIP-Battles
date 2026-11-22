@@ -5,8 +5,7 @@ import argparse
 import json
 import subprocess
 
-
-TEAMS = (1, 2, 3, 4, 5)
+from config import load_config
 
 
 def git(*args):
@@ -74,16 +73,25 @@ def first_addition(base, team):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--target", required=True, type=int, choices=TEAMS)
+    parser.add_argument("--target", required=True)
+    parser.add_argument("--config", help="путь к config.json (по умолчанию в корне)")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
+
+    cfg = load_config(args.config)
+    teams = cfg["team_ids"]
+    args.target = str(args.target)
+    if args.target not in teams:
+        parser.error(
+            f"target {args.target} отсутствует в config.json; команды: {', '.join(teams)}"
+        )
 
     base = first_battle_commit(args.target)
     solution_rev = count_commits(base, "solution.cpp")
     attacks_rev = {}
 
-    for team in TEAMS:
-        if team == args.target:
+    for team in teams:
+        if str(team) == args.target:
             continue
         if not base:
             team_base = None

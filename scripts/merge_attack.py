@@ -6,6 +6,7 @@ import json
 import os
 from datetime import datetime, timezone
 
+from config import load_config
 from scoring import build_scoreboard
 
 
@@ -25,14 +26,16 @@ def main():
     parser.add_argument("--result", required=True)
     parser.add_argument("--history", default="site/history.json")
     parser.add_argument("--scoreboard", default="site/scoreboard.json")
+    parser.add_argument("--config", help="путь к config.json (по умолчанию в корне)")
     args = parser.parse_args()
 
+    cfg = load_config(args.config)
     with open(args.result, encoding="utf-8") as f:
         entry = json.load(f)
 
     target = str(entry.get("target", ""))
     commit = entry.get("commit", "")
-    if target not in {"1", "2", "3", "4", "5"} or not commit:
+    if target not in cfg["team_ids"] or not commit:
         raise SystemExit("invalid attack result")
 
     now = datetime.now(timezone.utc)
@@ -53,7 +56,7 @@ def main():
     if not replaced:
         history["attacks"].append(entry)
 
-    scoreboard = build_scoreboard(history)
+    scoreboard = build_scoreboard(history, cfg)
 
     os.makedirs(os.path.dirname(args.history) or ".", exist_ok=True)
     with open(args.history, "w", encoding="utf-8") as f:
