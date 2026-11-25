@@ -785,8 +785,10 @@ function renderMatrix() {
         return;
       }
       const ratio = attack.passed / attack.total;
+      const stats = testStats(attack.tests);
+      const average = stats.total / Math.max(1, stats.count);
       classes.push(ratio >= 0.999 ? 'good' : ratio >= 0.5 ? 'mid' : 'bad');
-      rows += `<td class="${classes.join(' ')}" title="Пройдено ${attack.passed} из ${attack.total}"><span class="cell-score">${attack.passed}/${attack.total}</span></td>`;
+      rows += `<td class="${classes.join(' ')}" title="Пройдено ${attack.passed} из ${attack.total} · среднее ${formatSeconds(average)} · ${formatSeconds(stats.perLine)}/строка"><span class="cell-score">${attack.passed}/${attack.total}</span><small class="cell-time">ср. ${formatSeconds(average)}</small></td>`;
     });
     rows += '</tr>';
   });
@@ -794,7 +796,7 @@ function renderMatrix() {
   els.matrix.innerHTML = `
     <div class="panel-head">
       <h2>Краш-матрица</h2>
-      <p class="muted">Строки — защита, столбцы — атакующие команды. Итоги — во вкладке «Результаты».</p>
+      <p class="muted">Строки — защита, столбцы — атакующие команды. В ячейках: пройдено/всего и среднее время теста. Итоги — во вкладке «Результаты».</p>
     </div>
     <div class="table-wrap">
       <table class="matrix">
