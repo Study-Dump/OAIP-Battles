@@ -354,12 +354,9 @@ function renderSolutionDiffs(target, compact = false) {
         ${diffs.map((diff) => {
           const before = diff.beforeDefense || {};
           const after = diff.afterDefense || {};
-          const attackChanges = diff.added || diff.removed
-            ? `<p class="muted">Набор атак изменился: +${diff.added} / −${diff.removed}. Это не изменение решения.</p>`
-            : '';
           const resultNote = diff.changes.length
             ? ''
-            : `<p class="muted">${attackChanges ? 'Общие тесты не изменились.' : 'Результаты тестов не изменились.'}</p>`;
+            : '<p class="muted">Результаты общих тестов не изменились.</p>';
           return `
             <div class="solution-diff">
               <div class="solution-diff-head">
@@ -370,7 +367,6 @@ function renderSolutionDiffs(target, compact = false) {
               ${diff.changes.length
                 ? `<ul class="solution-diff-items">${diff.changes.map(renderSolutionChange).join('')}</ul>`
                 : resultNote}
-              ${attackChanges}
             </div>
           `;
         }).join('')}
@@ -787,7 +783,7 @@ function renderMatrix() {
   els.matrix.innerHTML = `
     <div class="panel-head">
       <h2>Краш-матрица</h2>
-      <p class="muted">Строки — защита, столбцы — атакующие команды. В ячейках: пройдено/всего и среднее время теста. Итоги — во вкладке «Результаты».</p>
+      <p class="muted">Строки — защита, столбцы — атакующие команды.</p>
     </div>
     <div class="table-wrap">
       <table class="matrix">
