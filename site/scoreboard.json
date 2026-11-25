@@ -1,7 +1,7 @@
 {
   "mode": "attack",
   "complete": true,
-  "updated": "2026-11-25T18:42:25.216396+00:00",
+  "updated": "2026-11-25T18:52:19.352914+00:00",
   "targets": [
     {
       "target": "1",
@@ -156,10 +156,10 @@
     {
       "target": "4",
       "branch": "attack-4",
-      "id": "attack-4-587ac5a",
-      "commit": "587ac5a9bf468ef355fda42bac8b8c41b2ccc068",
-      "timestamp": "2026-11-25T18:15:26.169929+00:00",
-      "solution_rev": 1,
+      "id": "attack-4-3648b77",
+      "commit": "3648b77c73ba4751488d86068b8d1a92cc62747a",
+      "timestamp": "2026-11-25T18:52:19.352914+00:00",
+      "solution_rev": 2,
       "attacks_rev": {
         "1": 2,
         "2": 2,
@@ -278,9 +278,9 @@
       ],
       "solution_rev": 0,
       "attack_points": 2,
-      "attack_total": 35,
-      "attack_ratio": 0.0571,
-      "attack_quality": 0.0571,
+      "attack_total": 40,
+      "attack_ratio": 0.05,
+      "attack_quality": 0.05,
       "attack_coverage": 1.0,
       "attack_attempts": [
         {
@@ -315,7 +315,7 @@
           "target": "4",
           "revision": 2,
           "failed": 0,
-          "total": 5,
+          "total": 10,
           "ratio": 0.0
         },
         {
@@ -330,7 +330,7 @@
       "avg_time": 0.0037,
       "time_per_line": 5.2e-07,
       "speed_quality": 0.7477,
-      "score": 66.67,
+      "score": 66.45,
       "defense_points": 20,
       "total_points": 22
     },
@@ -357,7 +357,7 @@
       ],
       "solution_rev": 0,
       "attack_points": 0,
-      "attack_total": 35,
+      "attack_total": 40,
       "attack_ratio": 0.0,
       "attack_quality": 0.0,
       "attack_coverage": 1.0,
@@ -394,7 +394,7 @@
           "target": "4",
           "revision": 2,
           "failed": 0,
-          "total": 5,
+          "total": 10,
           "ratio": 0.0
         },
         {
@@ -436,9 +436,9 @@
       ],
       "solution_rev": 0,
       "attack_points": 2,
-      "attack_total": 35,
-      "attack_ratio": 0.0571,
-      "attack_quality": 0.0571,
+      "attack_total": 40,
+      "attack_ratio": 0.05,
+      "attack_quality": 0.05,
       "attack_coverage": 1.0,
       "attack_attempts": [
         {
@@ -473,7 +473,7 @@
           "target": "4",
           "revision": 2,
           "failed": 0,
-          "total": 5,
+          "total": 10,
           "ratio": 0.0
         },
         {
@@ -488,7 +488,7 @@
       "avg_time": 0.0021,
       "time_per_line": 4e-07,
       "speed_quality": 0.9829,
-      "score": 71.37,
+      "score": 71.16,
       "defense_points": 20,
       "total_points": 22
     },
@@ -501,10 +501,10 @@
         "ratio": 1.0,
         "held": true
       },
-      "defense_quality": 0.95,
+      "defense_quality": 0.96,
       "defense_coverage": 1.0,
-      "defense_passed": 76,
-      "defense_total": 80,
+      "defense_passed": 96,
+      "defense_total": 100,
       "defense_attempts": [
         {
           "revision": 0,
@@ -517,9 +517,15 @@
           "passed": 60,
           "total": 60,
           "ratio": 1.0
+        },
+        {
+          "revision": 2,
+          "passed": 20,
+          "total": 20,
+          "ratio": 1.0
         }
       ],
-      "solution_rev": 1,
+      "solution_rev": 2,
       "attack_points": 0,
       "attack_total": 20,
       "attack_ratio": 0.0,
@@ -556,12 +562,12 @@
         }
       ],
       "attack_revs": 0,
-      "avg_time": 0.0016,
-      "time_per_line": 9.2e-07,
-      "speed_quality": 0.4233,
-      "score": 55.97,
-      "defense_points": 76,
-      "total_points": 76
+      "avg_time": 0.0018,
+      "time_per_line": 6.4e-07,
+      "speed_quality": 0.6151,
+      "score": 60.3,
+      "defense_points": 96,
+      "total_points": 96
     },
     {
       "team": "5",
@@ -586,7 +592,7 @@
       ],
       "solution_rev": 0,
       "attack_points": 0,
-      "attack_total": 35,
+      "attack_total": 40,
       "attack_ratio": 0.0,
       "attack_quality": 0.0,
       "attack_coverage": 1.0,
@@ -630,7 +636,7 @@
           "target": "4",
           "revision": 2,
           "failed": 0,
-          "total": 5,
+          "total": 10,
           "ratio": 0.0
         }
       ],
