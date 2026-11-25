@@ -99,18 +99,18 @@
 teamX/
   solution.cpp
   attacks/
-    attackY/               # атаки команды X на команду Y
+    teamY/                 # атаки команды X на команду Y
       0X_описание/
         input.txt
         expected_output.txt
 ```
 
-Внутри `attacks/` папки называются `attack<id>` по цели атак: `attack1` — атаки на команду 1, `attack4` — на команду 4. Это папки цели, не ветки `attack-<id>`. Автор — команда, чья папка `teamX`; поэтому внутри всех тестов в `attackY` автор один и тот же.
+Внутри `attacks/` папки называются `team<id>` по цели атак: `team1` — атаки на команду 1, `team4` — на команду 4. Это папки цели, не ветки `attack-<id>`. Автор — команда, чья папка `teamX`; поэтому внутри всех тестов в `teamY` автор один и тот же.
 
 Преподаватель раскладывает материалы так:
 
 - `teamX/solution.cpp` → `attack-X/solution.cpp`;
-- `teamX/attacks/attackY/*` → `attack-Y/attacks/teamX/*`.
+- `teamX/attacks/teamY/*` → `attack-Y/attacks/teamX/*`.
 
 После раскладки папка внутри `attacks/` по-прежнему означает автора атак, а не цель.
 
@@ -133,31 +133,17 @@ teamX/
 team3/                       # группа 678103
   solution.cpp
   attacks/
-    attack1/                 # атаки team3 на группу 678101
+    team1/                   # атаки team3 на группу 678101
       01_обычный_ввод/
         input.txt
         expected_output.txt
       02_граничный_случай/
         input.txt
         expected_output.txt
-    attack4/                 # атаки team3 на группу 678104
+    team4/                   # атаки team3 на группу 678104
       01_большие_числа/
         input.txt
         expected_output.txt
-```
-
-После раскладки эти файлы попадут в ветки так:
-
-```text
-attack-3/solution.cpp
-
-attack-1/attacks/team3/01_обычный_ввод/input.txt
-attack-1/attacks/team3/01_обычный_ввод/expected_output.txt
-attack-1/attacks/team3/02_граничный_случай/input.txt
-attack-1/attacks/team3/02_граничный_случай/expected_output.txt
-
-attack-4/attacks/team3/01_большие_числа/input.txt
-attack-4/attacks/team3/01_большие_числа/expected_output.txt
 ```
 
 В ветке `attack-1` папка `attacks/team3` означает, что тесты прислала команда `678103`, а защищается `678101`.
