@@ -1933,6 +1933,325 @@
       },
       "id": "attack-2-fe19f56",
       "timestamp": "2026-11-25T18:37:22.932087+00:00"
+    },
+    {
+      "mode": "attack",
+      "branch": "attack-3",
+      "commit": "e07b24d91708d38c6e291223e00f3753f816d881",
+      "target": "3",
+      "solution_rev": 0,
+      "attacks_rev": {
+        "1": 0,
+        "2": 0,
+        "4": 0,
+        "5": 0
+      },
+      "attackers": [
+        {
+          "team": "1",
+          "passed": 5,
+          "total": 5,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "4\n3.5\nAlice;101;4.5;2\nBob;102;3.5;1\nCara;103;4.5;0\nDan;101;2.0;5\n",
+              "expected_output": "2\nAlice;101;4.50;2\nCara;103;4.50;0\n",
+              "input_lines": 6,
+              "time_sec": 0.0017,
+              "actual_output": "2\nAlice;101;4.50;2\nCara;103;4.50;0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_basic",
+              "path": "attacks/team1/01_basic"
+            },
+            {
+              "skipped": false,
+              "input": "4\n4.0\nZoe;1;5.0;0\nAnna;1;5.0;0\nMike;1;4.5;0\nEve;1;3.9;0\n",
+              "expected_output": "3\nAnna;1;5.00;0\nZoe;1;5.00;0\nMike;1;4.50;0\n",
+              "input_lines": 6,
+              "time_sec": 0.0013,
+              "actual_output": "3\nAnna;1;5.00;0\nZoe;1;5.00;0\nMike;1;4.50;0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "02_gpa_ties",
+              "path": "attacks/team1/02_gpa_ties"
+            },
+            {
+              "skipped": false,
+              "input": "0\n3.5\n",
+              "expected_output": "0\n",
+              "input_lines": 2,
+              "time_sec": 0.0012,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "03_zero_students",
+              "path": "attacks/team1/03_zero_students"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nA;1;4.0;0\nEXTRA\n",
+              "expected_output": "",
+              "input_lines": 4,
+              "time_sec": 0.0011,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "04_extra_line",
+              "path": "attacks/team1/04_extra_line"
+            },
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "",
+              "input_lines": 0,
+              "time_sec": 0.001,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "05_empty_file",
+              "path": "attacks/team1/05_empty_file"
+            }
+          ]
+        },
+        {
+          "team": "2",
+          "passed": 5,
+          "total": 5,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "2\n4.0\nA;1;4.0;0\nB;2;4.0001;0\n",
+              "expected_output": "1\nB;2;4.00;0\n",
+              "input_lines": 4,
+              "time_sec": 0.0011,
+              "actual_output": "1\nB;2;4.00;0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "01_threshold_boundary",
+              "path": "attacks/team2/01_threshold_boundary"
+            },
+            {
+              "skipped": false,
+              "input": "2\n2.5\nSame;7;3.0;1\nSame;7;3.0;1\n",
+              "expected_output": "2\nSame;7;3.00;1\nSame;7;3.00;1\n",
+              "input_lines": 4,
+              "time_sec": 0.0011,
+              "actual_output": "2\nSame;7;3.00;1\nSame;7;3.00;1\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "02_duplicates",
+              "path": "attacks/team2/02_duplicates"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nA;1;abc;0\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.001,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "03_bad_gpa",
+              "path": "attacks/team2/03_bad_gpa"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nA;1;4.0\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.001,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "04_bad_separator",
+              "path": "attacks/team2/04_bad_separator"
+            },
+            {
+              "skipped": false,
+              "input": "5000\n3.0\nStudent000000;201;0.00;0\nStudent000001;202;0.37;1\nStudent000002;203;0.74;2\nStudent000003;204;1.11;3\nStudent000004;205;1.48;0\nStudent000005;206;1.85;1\nStudent000006;207;2.22;2\nStudent000007;201;2.59;3\nStudent000008;202;2.96;0\nStudent000009;203;3.33;1\nStudent000010;204;3.70;2\nStudent000011;205;4.07;3\nStudent000012;206;4.44;0\nStudent000013;207;4.81;1\nStudent000014;201;0.17;2\nStudent000015;202;0.54;3\nStudent000016;203;0.91;0\nStudent000017;204;1.28;1\nStudent000018;205;1.65;2\nStudent000019;206;2.02;3\nStudent000020;207;2.39;0\nStudent000021;201;2.76;1\nStudent000022;202;3.13;2\nStudent000023;203;3.50;3\nStudent000024;204;3.87;0\nStudent000025;205;4.24;1\nStudent000026;206;4.61;2\nStudent000027;207;4.98;3\nStudent000028;201;0.34;0\nStudent000029;202;0.71;1\nStudent000030;203;1.08;2\nStudent000031;204;1.45;3\nStudent000032;205;1.82;0\nStudent000033;206;2.19;1\nStudent000034;207;2.56;2\nStudent000035;201;2.93;3\nStudent000036;202;3.30;0\nStudent000037;203;3.67;1\nStudent000038;204;4.04;2\nStudent000039;205;4.41;3\nStudent000040;206;4.78;0\nStudent000041;207;0.14;1\nStudent000042;201;0.51;2\nStudent000043;202;0.88;3\nStudent000044;203;1.25;0\nStudent000045;204;1.62;1\nStudent000046;205;1.99;2\nStudent000047;206;2.36;3\nStudent000048;207;2.73;0\nStudent000049;201;3.10;1\nStudent000050;202;3.47;2\nStudent000051;203;3.84;3\nStudent000052;204;4.21;0\nStudent000053;205;4.58;1\nStudent000054;206;4.95;2\nStudent000055;207;0.31;3\nStudent000056;201;0.68;0\nStudent000057;202;1.05;1\nStudent000058;203;1.42;2\nStudent000059;204;1.79;3\nStudent000060;205;2.16;0\nStudent000061;206;2.53;1\nStudent000062;207;2.90;2\nStudent000063;201;3.27;3\nStudent000064;202;3.64;0\nStudent000065;203;4.01;1\nStudent000066;204;4.38;2\nStudent000067;205;4.75;3\nStudent000068;206;0.11;0\nStudent000069;207;0.48;1\nStudent000070;201;0.85;2\nStudent000071;202;1.22;3\nStudent000072;203;1.59;0\nStudent000073;204;1.96;1\nStudent000074;205;2.33;2\nStudent000075;206;2.70;3\nStudent000076;207;3.07;0\nStudent000077;201;3.44;1\nStudent000078;202;3.81;2\nStudent000079;203;4.18;3\nStudent000080;204;4.55;0\nStudent000081;205;4.92;1\nStudent000082;206;0.28;2\nStudent000083;207;0.65;3\nStudent000084;201;1.02;0\nStudent000085;202;1.39;1\nStudent000086;203;1.76;2\nStudent000087;204;2.13;3\nStudent000088;205;2.50;0\nStudent000089;206;2.87;1\nStudent000090;207;3.24;2\nStudent000091;201;3.61;3\nStudent000092;202;3.98;0\nStudent000093;203;4.35;1\nStudent000094;204;4.72;2\nStudent000095;205;0.08;3\nStudent000096;206;0.45;0\nStudent000097;207;0.82;1\nStudent000098;201;1.19;2\nStudent000099;202;1.56;3\nStudent000100;203;1.93;0\nStudent000101;204;2.30;1\nStudent000102;205;2.67;2\nStudent000103;206;3.04;3\nStudent000104;207;3.41;0\nStudent000105;201;3.78;1\nStudent000106;202;4.15;2\nStudent000107;203;4.52;3\nStudent000108;204;4.89;0\nStudent000109;205;0.25;1\nStudent000110;206;0.62;2\nStudent000111;207;0.99;3\nStudent000112;201;1.36;0\nStudent000113;202;1.73;1\nStudent000114;203;2.10;2\nStudent000115;204;2.47;3\nStudent000116;205;2.84;0\nStudent000117;206;3.21;1\nStudent000118;207;3.58;2\nStudent000119;201;3.95;3\nStudent000120;202;4.32;0\nStudent000121;203;4.69;1\nStudent000122;204;0.05;2\nStudent000123;205;0.42;3\nStudent000124;206;0.79;0\nStudent000125;207;1.16;1\nStudent000126;201;1.53;2\nStudent000127;202;1.90;3\nStudent000128;203;2.27;0\nStudent000129;204;2.64;1\nStudent000130;205;3.01;2\nStudent000131;206;3.38;3\nStudent000132;207;3.75;0\nStudent000133;201;4.12;1\nStudent000134;202;4.49;2\nStudent000135;203;4.86;3\nStudent000136;204;0.22;0\nStudent000137;205;0.59;1\nStudent000138;206;0.96;2\nStudent000139;207;1.33;3\nStudent000140;201;1.70;0\nStudent000141;202;2.07;1\nStudent000142;203;2.44;2\nStudent000143;204;2.81;3\nStudent000144;205;3.18;0\nStudent000145;206;3.55;1\nStudent000146;207;3.92;2\nStudent000147;201;4.29;3\nStudent000148;202;4.66;0\nStudent000149;203;0.02;1\nStudent000150;204;0.39;2\nStudent000151;205;0.76;3\nStudent000152;206;1.13;0\nStudent000153;207;1.50;1\nStudent000154;201;1.87;2\nStudent000155;202;2.24;3\nStudent000156;203;2.61;0\nStudent000157;204;2.98;1\nStudent000158;205;3.35;2\nStudent000159;206;3.72;3\nStudent000160;207;4.09;0\nStudent000161;201;4.46;1\nStudent000162;202;4.83;2\nStudent000163;203;0.19;3\nStudent000164;204;0.56;0\nStudent000165;205;0.93;1\nStudent000166;206;1.30;2\nStudent000167;207;1.67;3\nStudent000168;201;2.04;0\nStudent000169;202;2.41;1\nStudent000170;203;2.78;2\nStudent000171;204;3.15;3\nStudent000172;205;3.52;0\nStudent000173;206;3.89;1\nStudent000174;207;4.26;2\nStudent000175;201;4.63;3\nStudent000176;202;5.00;0\nStudent000177;203;0.36;1\nStudent000178;204;0.73;2\nStudent000179;205;1.10;3\nStudent000180;206;1.47;0\nStudent000181;207;1.84;1\nStudent000182;201;2.21;2\nStudent000183;202;2.58;3\nStudent000184;203;2.95;0\nStudent000185;204;3.32;1\nStudent000186;205;3.69;2\nStudent000187;206;4.06;3\nStudent000188;207;4.43;0\nStudent000189;201;4.80;1\nStudent000190;202;0.16;2\nStudent000191;203;0.53;3\nStudent000192;204;0.90;0\nStudent000193;205;1.27;1\nStudent000194;206;1.64;2\nStudent000195;207;2.01;3\nStudent000196;201;2.38;0\nStudent000197;202;2.75;1\nStudent000198;203;3.12;2\nStudent000199;20",
+              "expected_output": "1995\nStudent000176;202;5.00;0\nStudent000677;206;5.00;1\nStudent001178;203;5.00;2\nStudent001679;207;5.00;3\nStudent002180;204;5.00;0\nStudent002681;201;5.00;1\nStudent003182;205;5.00;2\nStudent003683;202;5.00;3\nStudent004184;206;5.00;0\nStudent004685;203;5.00;1\nStudent000352;203;4.99;0\nStudent000853;207;4.99;1\nStudent001354;204;4.99;2\nStudent001855;201;4.99;3\nStudent002356;205;4.99;0\nStudent002857;202;4.99;1\nStudent003358;206;4.99;2\nStudent003859;203;4.99;3\nStudent004360;207;4.99;0\nStudent004861;204;4.99;1\nStudent000027;207;4.98;3\nStudent000528;204;4.98;0\nStudent001029;201;4.98;1\nStudent001530;205;4.98;2\nStudent002031;202;4.98;3\nStudent002532;206;4.98;0\nStudent003033;203;4.98;1\nStudent003534;207;4.98;2\nStudent004035;204;4.98;3\nStudent004536;201;4.98;0\nStudent000203;201;4.97;3\nStudent000704;205;4.97;0\nStudent001205;202;4.97;1\nStudent001706;206;4.97;2\nStudent002207;203;4.97;3\nStudent002708;207;4.97;0\nStudent003209;204;4.97;1\nStudent003710;201;4.97;2\nStudent004211;205;4.97;3\nStudent004712;202;4.97;0\nStudent000379;202;4.96;3\nStudent000880;206;4.96;0\nStudent001381;203;4.96;1\nStudent001882;207;4.96;2\nStudent002383;204;4.96;3\nStudent002884;201;4.96;0\nStudent003385;205;4.96;1\nStudent003886;202;4.96;2\nStudent004387;206;4.96;3\nStudent004888;203;4.96;0\nStudent000054;206;4.95;2\nStudent000555;203;4.95;3\nStudent001056;207;4.95;0\nStudent001557;204;4.95;1\nStudent002058;201;4.95;2\nStudent002559;205;4.95;3\nStudent003060;202;4.95;0\nStudent003561;206;4.95;1\nStudent004062;203;4.95;2\nStudent004563;207;4.95;3\nStudent000230;207;4.94;2\nStudent000731;204;4.94;3\nStudent001232;201;4.94;0\nStudent001733;205;4.94;1\nStudent002234;202;4.94;2\nStudent002735;206;4.94;3\nStudent003236;203;4.94;0\nStudent003737;207;4.94;1\nStudent004238;204;4.94;2\nStudent004739;201;4.94;3\nStudent000406;201;4.93;2\nStudent000907;205;4.93;3\nStudent001408;202;4.93;0\nStudent001909;206;4.93;1\nStudent002410;203;4.93;2\nStudent002911;207;4.93;3\nStudent003412;204;4.93;0\nStudent003913;201;4.93;1\nStudent004414;205;4.93;2\nStudent004915;202;4.93;3\nStudent000081;205;4.92;1\nStudent000582;202;4.92;2\nStudent001083;206;4.92;3\nStudent001584;203;4.92;0\nStudent002085;207;4.92;1\nStudent002586;204;4.92;2\nStudent003087;201;4.92;3\nStudent003588;205;4.92;0\nStudent004089;202;4.92;1\nStudent004590;206;4.92;2\nStudent000257;206;4.91;1\nStudent000758;203;4.91;2\nStudent001259;207;4.91;3\nStudent001760;204;4.91;0\nStudent002261;201;4.91;1\nStudent002762;205;4.91;2\nStudent003263;202;4.91;3\nStudent003764;206;4.91;0\nStudent004265;203;4.91;1\nStudent004766;207;4.91;2\nStudent000433;207;4.90;1\nStudent000934;204;4.90;2\nStudent001435;201;4.90;3\nStudent001936;205;4.90;0\nStudent002437;202;4.90;1\nStudent002938;206;4.90;2\nStudent003439;203;4.90;3\nStudent003940;207;4.90;0\nStudent004441;204;4.90;1\nStudent004942;201;4.90;2\nStudent000108;204;4.89;0\nStudent000609;201;4.89;1\nStudent001110;205;4.89;2\nStudent001611;202;4.89;3\nStudent002112;206;4.89;0\nStudent002613;203;4.89;1\nStudent003114;207;4.89;2\nStudent003615;204;4.89;3\nStudent004116;201;4.89;0\nStudent004617;205;4.89;1\nStudent000284;205;4.88;0\nStudent000785;202;4.88;1\nStudent001286;206;4.88;2\nStudent001787;203;4.88;3\nStudent002288;207;4.88;0\nStudent002789;204;4.88;1\nStudent003290;201;4.88;2\nStudent003791;205;4.88;3\nStudent004292;202;4.88;0\nStudent004793;206;4.88;1\nStudent000460;206;4.87;0\nStudent000961;203;4.87;1\nStudent001462;207;4.87;2\nStudent001963;204;4.87;3\nStudent002464;201;4.87;0\nStudent002965;205;4.87;1\nStudent003466;202;4.87;2\nStudent003967;206;4.87;3\nStudent004468;203;4.87;0\nStudent004969;207;4.87;1\nStudent000135;203;4.86;3\nStudent000636;207;4.86;0\nStudent001137;204;4.86;1\nStudent001638;201;4.86;2\nStudent002139;205;4.86;3\nStudent002640;202;4.86;0\nStudent003141;206;4.86;1\nStudent003642;203;4.86;2\nStudent004143;207;4.86;3\nStudent004644;204;4.86;0\nStudent000311;204;4.85;3\nStudent000812;201;4.85;0\nStudent001313;205;4.85;1\nStudent001814;202;4.85;2\nStudent002315;206;4.85;3\nStudent002816;203;4.85;0\nStudent003317;207;4.85;1\nStudent003818;204;4.85;2\nStudent004319;201;4.85;3\nStudent004820;205;4.85;0\nStudent000487;205;4.84;3\nStudent000988;202;4.84;0\nStudent001489;206;4.84;1\nStudent001990;203;4.84;2\nStudent002491;207;4.84;3\nStudent002992;204;4.84;0\nStudent003493;201;4.84;1\nStudent003994;205;4.84;2\nStudent004495;202;4.84;3\nStudent004996;206;4.84;0\nStudent000162;202;4.83;2\nStudent000663;206;4.83;3\nStudent001164;203;4.83;0\nStudent001665;207;4.83;1\nStudent002166;204;4.83;2\nStudent002667;201;4.83;3\nStudent003168;205;4.83;0\nStudent003669;202;4.83;1\nStudent004170;206;4.83;2\nStudent004671;203;4.83;3\nStudent000338;203;4.82;2\nStudent000839;207;4.82;3\nStudent001340;204;4.82;0\nStudent001841;201;4.82;1\nStudent002342;205;4.82;2\nStudent002843;202;4.82;3\nStudent003344;206;4.82;0\nStudent003845;203;4.82;1\nStudent004346;207;4.82;2\nStudent004847;204;4.82;3\nStudent000013;207;4.81;1\nStudent000514;204;4.81;2\nStudent001015;201;4.81;3\nStudent001516;205;4.81;0\nStudent002017;202;4.81;1\nStudent002518;206;4.81;2\nStudent003019;203;4.81;3\nStudent003520;207;4.81;0\nStudent004021;204;4.81;1\nStudent004522;201;4.",
+              "input_lines": 5002,
+              "time_sec": 0.0019,
+              "actual_output": "1995\nStudent000176;202;5.00;0\nStudent000677;206;5.00;1\nStudent001178;203;5.00;2\nStudent001679;207;5.00;3\nStudent002180;204;5.00;0\nStudent002681;201;5.00;1\nStudent003182;205;5.00;2\nStudent003683;202;5.00;3\nStudent004184;206;5.00;0\nStudent004685;203;5.00;1\nStudent000352;203;4.99;0\nStudent000853;207;4.99;1\nStudent001354;204;4.99;2\nStudent001855;201;4.99;3\nStudent002356;205;4.99;0\nStudent002857;202;4.99;1\nStudent003358;206;4.99;2\nStudent003859;203;4.99;3\nStudent004360;207;4.99;0\nStudent004861;204;4.99;1\nStudent000027;207;4.98;3\nStudent000528;204;4.98;0\nStudent001029;201;4.98;1\nStudent001530;205;4.98;2\nStudent002031;202;4.98;3\nStudent002532;206;4.98;0\nStudent003033;203;4.98;1\nStudent003534;207;4.98;2\nStudent004035;204;4.98;3\nStudent004536;201;4.98;0\nStudent000203;201;4.97;3\nStudent000704;205;4.97;0\nStudent001205;202;4.97;1\nStudent001706;206;4.97;2\nStudent002207;203;4.97;3\nStudent002708;207;4.97;0\nStudent003209;204;4.97;1\nStudent003710;201;4.97;2\nStudent004211;205;4.97;3\nStudent004712;202;4.97;0\nStudent000379;202;4.96;3\nStudent000880;206;4.96;0\nStudent001381;203;4.96;1\nStudent001882;207;4.96;2\nStudent002383;204;4.96;3\nStudent002884;201;4.96;0\nStudent003385;205;4.96;1\nStudent003886;202;4.96;2\nStudent004387;206;4.96;3\nStudent004888;203;4.96;0\nStudent000054;206;4.95;2\nStudent000555;203;4.95;3\nStudent001056;207;4.95;0\nStudent001557;204;4.95;1\nStudent002058;201;4.95;2\nStudent002559;205;4.95;3\nStudent003060;202;4.95;0\nStudent003561;206;4.95;1\nStudent004062;203;4.95;2\nStudent004563;207;4.95;3\nStudent000230;207;4.94;2\nStudent000731;204;4.94;3\nStudent001232;201;4.94;0\nStudent001733;205;4.94;1\nStudent002234;202;4.94;2\nStudent002735;206;4.94;3\nStudent003236;203;4.94;0\nStudent003737;207;4.94;1\nStudent004238;204;4.94;2\nStudent004739;201;4.94;3\nStudent000406;201;4.93;2\nStudent000907;205;4.93;3\nStudent001408;202;4.93;0\nStudent001909;206;4.93;1\nStudent002410;203;4.93;2\nStudent002911;207;4.93;3\nStudent003412;204;4.93;0\nStudent003913;201;4.93;1\nStudent004414;205;4.93;2\nStudent004915;202;4.93;3\nStudent000081;205;4.92;1\nStudent000582;202;4.92;2\nStudent001083;206;4.92;3\nStudent001584;203;4.92;0\nStudent002085;207;4.92;1\nStudent002586;204;4.92;2\nStudent003087;201;4.92;3\nStudent003588;205;4.92;0\nStudent004089;202;4.92;1\nStudent004590;206;4.92;2\nStudent000257;206;4.91;1\nStudent000758;203;4.91;2\nStudent001259;207;4.91;3\nStudent001760;204;4.91;0\nStudent002261;201;4.91;1\nStudent002762;205;4.91;2\nStudent003263;202;4.91;3\nStudent003764;206;4.91;0\nStudent004265;203;4.91;1\nStudent004766;207;4.91;2\nStudent000433;207;4.90;1\nStudent000934;204;4.90;2\nStudent001435;201;4.90;3\nStudent001936;205;4.90;0\nStudent002437;202;4.90;1\nStudent002938;206;4.90;2\nStudent003439;203;4.90;3\nStudent003940;207;4.90;0\nStudent004441;204;4.90;1\nStudent004942;201;4.90;2\nStudent000108;204;4.89;0\nStudent000609;201;4.89;1\nStudent001110;205;4.89;2\nStudent001611;202;4.89;3\nStudent002112;206;4.89;0\nStudent002613;203;4.89;1\nStudent003114;207;4.89;2\nStudent003615;204;4.89;3\nStudent004116;201;4.89;0\nStudent004617;205;4.89;1\nStudent000284;205;4.88;0\nStudent000785;202;4.88;1\nStudent001286;206;4.88;2\nStudent001787;203;4.88;3\nStudent002288;207;4.88;0\nStudent002789;204;4.88;1\nStudent003290;201;4.88;2\nStudent003791;205;4.88;3\nStudent004292;202;4.88;0\nStudent004793;206;4.88;1\nStudent000460;206;4.87;0\nStudent000961;203;4.87;1\nStudent001462;207;4.87;2\nStudent001963;204;4.87;3\nStudent002464;201;4.87;0\nStudent002965;205;4.87;1\nStudent003466;202;4.87;2\nStudent003967;206;4.87;3\nStudent004468;203;4.87;0\nStudent004969;207;4.87;1\nStudent000135;203;4.86;3\nStudent000636;207;4.86;0\nStudent001137;204;4.86;1\nStudent001638;201;4.86;2\nStudent002139;205;4.86;3\nStudent002640;202;4.86;0\nStudent003141;206;4.86;1\nStudent003642;203;4.86;2\nStudent004143;207;4.86;3\nStudent004644;204;4.86;0\nStudent000311;204;4.85;3\nStudent000812;201;4.85;0\nStudent001313;205;4.85;1\nStudent001814;202;4.85;2\nStudent002315;206;4.85;3\nStudent002816;203;4.85;0\nStudent003317;207;4.85;1\nStudent003818;204;4.85;2\nStudent004319;201;4.85;3\nStudent004820;205;4.85;0\nStudent000487;205;4.84;3\nStudent000988;202;4.84;0\nStudent001489;206;4.84;1\nStudent001990;203;4.84;2\nStudent002491;207;4.84;3\nStudent002992;204;4.84;0\nStudent003493;201;4.84;1\nStudent003994;205;4.84;2\nStudent004495;202;4.84;3\nStudent004996;206;4.84;0\nStudent000162;202;4.83;2\nStudent000663;206;4.83;3\nStudent001164;203;4.83;0\nStudent001665;207;4.83;1\nStudent002166;204;4.83;2\nStudent002667;201;4.83;3\nStudent003168;205;4.83;0\nStudent003669;202;4.83;1\nStudent004170;206;4.83;2\nStudent004671;203;4.83;3\nStudent000338;203;4.82;2\nStudent000839;207;4.82;3\nStudent001340;204;4.82;0\nStudent001841;201;4.82;1\nStudent002342;205;4.82;2\nStudent002843;202;4.82;3\nStudent003344;206;4.82;0\nStudent003845;203;4.82;1\nStudent004346;207;4.82;2\nStudent004847;204;4.82;3\nStudent000013;207;4.81;1\nStudent000514;204;4.81;2\nStudent001015;201;4.81;3\nStudent001516;205;4.81;0\nStudent002017;202;4.81;1\nStudent002518;206;4.81;2\nStudent003019;203;4.81;3\nStudent003520;207;4.81;0\nStudent004021;204;4.81;1\nStudent004522;201;4.",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "05_large_5000",
+              "path": "attacks/team2/05_large_5000"
+            }
+          ]
+        },
+        {
+          "team": "4",
+          "passed": 5,
+          "total": 5,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "4\n3.5\nAlice;101;4.5;2\nBob;102;3.5;1\nCara;103;4.5;0\nDan;101;2.0;5\n",
+              "expected_output": "2\nAlice;101;4.50;2\nCara;103;4.50;0\n",
+              "input_lines": 6,
+              "time_sec": 0.0011,
+              "actual_output": "2\nAlice;101;4.50;2\nCara;103;4.50;0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "01_basic",
+              "path": "attacks/team4/01_basic"
+            },
+            {
+              "skipped": false,
+              "input": "4\n4.0\nZoe;1;5.0;0\nAnna;1;5.0;0\nMike;1;4.5;0\nEve;1;3.9;0\n",
+              "expected_output": "3\nAnna;1;5.00;0\nZoe;1;5.00;0\nMike;1;4.50;0\n",
+              "input_lines": 6,
+              "time_sec": 0.001,
+              "actual_output": "3\nAnna;1;5.00;0\nZoe;1;5.00;0\nMike;1;4.50;0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "02_gpa_ties",
+              "path": "attacks/team4/02_gpa_ties"
+            },
+            {
+              "skipped": false,
+              "input": "0\n3.5\n",
+              "expected_output": "0\n",
+              "input_lines": 2,
+              "time_sec": 0.001,
+              "actual_output": "0\n",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "03_zero_students",
+              "path": "attacks/team4/03_zero_students"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nA;1;4.0;0\nEXTRA\n",
+              "expected_output": "",
+              "input_lines": 4,
+              "time_sec": 0.001,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "04_extra_line",
+              "path": "attacks/team4/04_extra_line"
+            },
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "",
+              "input_lines": 0,
+              "time_sec": 0.0009,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "4",
+              "name": "05_empty_file",
+              "path": "attacks/team4/05_empty_file"
+            }
+          ]
+        },
+        {
+          "team": "5",
+          "passed": 5,
+          "total": 5,
+          "failed": 0,
+          "revision": 0,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "40000\n3.0\nStudent000000;201;0.00;0\nStudent000001;202;0.37;1\nStudent000002;203;0.74;2\nStudent000003;204;1.11;3\nStudent000004;205;1.48;0\nStudent000005;206;1.85;1\nStudent000006;207;2.22;2\nStudent000007;201;2.59;3\nStudent000008;202;2.96;0\nStudent000009;203;3.33;1\nStudent000010;204;3.70;2\nStudent000011;205;4.07;3\nStudent000012;206;4.44;0\nStudent000013;207;4.81;1\nStudent000014;201;0.17;2\nStudent000015;202;0.54;3\nStudent000016;203;0.91;0\nStudent000017;204;1.28;1\nStudent000018;205;1.65;2\nStudent000019;206;2.02;3\nStudent000020;207;2.39;0\nStudent000021;201;2.76;1\nStudent000022;202;3.13;2\nStudent000023;203;3.50;3\nStudent000024;204;3.87;0\nStudent000025;205;4.24;1\nStudent000026;206;4.61;2\nStudent000027;207;4.98;3\nStudent000028;201;0.34;0\nStudent000029;202;0.71;1\nStudent000030;203;1.08;2\nStudent000031;204;1.45;3\nStudent000032;205;1.82;0\nStudent000033;206;2.19;1\nStudent000034;207;2.56;2\nStudent000035;201;2.93;3\nStudent000036;202;3.30;0\nStudent000037;203;3.67;1\nStudent000038;204;4.04;2\nStudent000039;205;4.41;3\nStudent000040;206;4.78;0\nStudent000041;207;0.14;1\nStudent000042;201;0.51;2\nStudent000043;202;0.88;3\nStudent000044;203;1.25;0\nStudent000045;204;1.62;1\nStudent000046;205;1.99;2\nStudent000047;206;2.36;3\nStudent000048;207;2.73;0\nStudent000049;201;3.10;1\nStudent000050;202;3.47;2\nStudent000051;203;3.84;3\nStudent000052;204;4.21;0\nStudent000053;205;4.58;1\nStudent000054;206;4.95;2\nStudent000055;207;0.31;3\nStudent000056;201;0.68;0\nStudent000057;202;1.05;1\nStudent000058;203;1.42;2\nStudent000059;204;1.79;3\nStudent000060;205;2.16;0\nStudent000061;206;2.53;1\nStudent000062;207;2.90;2\nStudent000063;201;3.27;3\nStudent000064;202;3.64;0\nStudent000065;203;4.01;1\nStudent000066;204;4.38;2\nStudent000067;205;4.75;3\nStudent000068;206;0.11;0\nStudent000069;207;0.48;1\nStudent000070;201;0.85;2\nStudent000071;202;1.22;3\nStudent000072;203;1.59;0\nStudent000073;204;1.96;1\nStudent000074;205;2.33;2\nStudent000075;206;2.70;3\nStudent000076;207;3.07;0\nStudent000077;201;3.44;1\nStudent000078;202;3.81;2\nStudent000079;203;4.18;3\nStudent000080;204;4.55;0\nStudent000081;205;4.92;1\nStudent000082;206;0.28;2\nStudent000083;207;0.65;3\nStudent000084;201;1.02;0\nStudent000085;202;1.39;1\nStudent000086;203;1.76;2\nStudent000087;204;2.13;3\nStudent000088;205;2.50;0\nStudent000089;206;2.87;1\nStudent000090;207;3.24;2\nStudent000091;201;3.61;3\nStudent000092;202;3.98;0\nStudent000093;203;4.35;1\nStudent000094;204;4.72;2\nStudent000095;205;0.08;3\nStudent000096;206;0.45;0\nStudent000097;207;0.82;1\nStudent000098;201;1.19;2\nStudent000099;202;1.56;3\nStudent000100;203;1.93;0\nStudent000101;204;2.30;1\nStudent000102;205;2.67;2\nStudent000103;206;3.04;3\nStudent000104;207;3.41;0\nStudent000105;201;3.78;1\nStudent000106;202;4.15;2\nStudent000107;203;4.52;3\nStudent000108;204;4.89;0\nStudent000109;205;0.25;1\nStudent000110;206;0.62;2\nStudent000111;207;0.99;3\nStudent000112;201;1.36;0\nStudent000113;202;1.73;1\nStudent000114;203;2.10;2\nStudent000115;204;2.47;3\nStudent000116;205;2.84;0\nStudent000117;206;3.21;1\nStudent000118;207;3.58;2\nStudent000119;201;3.95;3\nStudent000120;202;4.32;0\nStudent000121;203;4.69;1\nStudent000122;204;0.05;2\nStudent000123;205;0.42;3\nStudent000124;206;0.79;0\nStudent000125;207;1.16;1\nStudent000126;201;1.53;2\nStudent000127;202;1.90;3\nStudent000128;203;2.27;0\nStudent000129;204;2.64;1\nStudent000130;205;3.01;2\nStudent000131;206;3.38;3\nStudent000132;207;3.75;0\nStudent000133;201;4.12;1\nStudent000134;202;4.49;2\nStudent000135;203;4.86;3\nStudent000136;204;0.22;0\nStudent000137;205;0.59;1\nStudent000138;206;0.96;2\nStudent000139;207;1.33;3\nStudent000140;201;1.70;0\nStudent000141;202;2.07;1\nStudent000142;203;2.44;2\nStudent000143;204;2.81;3\nStudent000144;205;3.18;0\nStudent000145;206;3.55;1\nStudent000146;207;3.92;2\nStudent000147;201;4.29;3\nStudent000148;202;4.66;0\nStudent000149;203;0.02;1\nStudent000150;204;0.39;2\nStudent000151;205;0.76;3\nStudent000152;206;1.13;0\nStudent000153;207;1.50;1\nStudent000154;201;1.87;2\nStudent000155;202;2.24;3\nStudent000156;203;2.61;0\nStudent000157;204;2.98;1\nStudent000158;205;3.35;2\nStudent000159;206;3.72;3\nStudent000160;207;4.09;0\nStudent000161;201;4.46;1\nStudent000162;202;4.83;2\nStudent000163;203;0.19;3\nStudent000164;204;0.56;0\nStudent000165;205;0.93;1\nStudent000166;206;1.30;2\nStudent000167;207;1.67;3\nStudent000168;201;2.04;0\nStudent000169;202;2.41;1\nStudent000170;203;2.78;2\nStudent000171;204;3.15;3\nStudent000172;205;3.52;0\nStudent000173;206;3.89;1\nStudent000174;207;4.26;2\nStudent000175;201;4.63;3\nStudent000176;202;5.00;0\nStudent000177;203;0.36;1\nStudent000178;204;0.73;2\nStudent000179;205;1.10;3\nStudent000180;206;1.47;0\nStudent000181;207;1.84;1\nStudent000182;201;2.21;2\nStudent000183;202;2.58;3\nStudent000184;203;2.95;0\nStudent000185;204;3.32;1\nStudent000186;205;3.69;2\nStudent000187;206;4.06;3\nStudent000188;207;4.43;0\nStudent000189;201;4.80;1\nStudent000190;202;0.16;2\nStudent000191;203;0.53;3\nStudent000192;204;0.90;0\nStudent000193;205;1.27;1\nStudent000194;206;1.64;2\nStudent000195;207;2.01;3\nStudent000196;201;2.38;0\nStudent000197;202;2.75;1\nStudent000198;203;3.12;2\nStudent000199;2",
+              "expected_output": "15968\nStudent000176;202;5.00;0\nStudent000677;206;5.00;1\nStudent001178;203;5.00;2\nStudent001679;207;5.00;3\nStudent002180;204;5.00;0\nStudent002681;201;5.00;1\nStudent003182;205;5.00;2\nStudent003683;202;5.00;3\nStudent004184;206;5.00;0\nStudent004685;203;5.00;1\nStudent005186;207;5.00;2\nStudent005687;204;5.00;3\nStudent006188;201;5.00;0\nStudent006689;205;5.00;1\nStudent007190;202;5.00;2\nStudent007691;206;5.00;3\nStudent008192;203;5.00;0\nStudent008693;207;5.00;1\nStudent009194;204;5.00;2\nStudent009695;201;5.00;3\nStudent010196;205;5.00;0\nStudent010697;202;5.00;1\nStudent011198;206;5.00;2\nStudent011699;203;5.00;3\nStudent012200;207;5.00;0\nStudent012701;204;5.00;1\nStudent013202;201;5.00;2\nStudent013703;205;5.00;3\nStudent014204;202;5.00;0\nStudent014705;206;5.00;1\nStudent015206;203;5.00;2\nStudent015707;207;5.00;3\nStudent016208;204;5.00;0\nStudent016709;201;5.00;1\nStudent017210;205;5.00;2\nStudent017711;202;5.00;3\nStudent018212;206;5.00;0\nStudent018713;203;5.00;1\nStudent019214;207;5.00;2\nStudent019715;204;5.00;3\nStudent020216;201;5.00;0\nStudent020717;205;5.00;1\nStudent021218;202;5.00;2\nStudent021719;206;5.00;3\nStudent022220;203;5.00;0\nStudent022721;207;5.00;1\nStudent023222;204;5.00;2\nStudent023723;201;5.00;3\nStudent024224;205;5.00;0\nStudent024725;202;5.00;1\nStudent025226;206;5.00;2\nStudent025727;203;5.00;3\nStudent026228;207;5.00;0\nStudent026729;204;5.00;1\nStudent027230;201;5.00;2\nStudent027731;205;5.00;3\nStudent028232;202;5.00;0\nStudent028733;206;5.00;1\nStudent029234;203;5.00;2\nStudent029735;207;5.00;3\nStudent030236;204;5.00;0\nStudent030737;201;5.00;1\nStudent031238;205;5.00;2\nStudent031739;202;5.00;3\nStudent032240;206;5.00;0\nStudent032741;203;5.00;1\nStudent033242;207;5.00;2\nStudent033743;204;5.00;3\nStudent034244;201;5.00;0\nStudent034745;205;5.00;1\nStudent035246;202;5.00;2\nStudent035747;206;5.00;3\nStudent036248;203;5.00;0\nStudent036749;207;5.00;1\nStudent037250;204;5.00;2\nStudent037751;201;5.00;3\nStudent038252;205;5.00;0\nStudent038753;202;5.00;1\nStudent039254;206;5.00;2\nStudent039755;203;5.00;3\nStudent000352;203;4.99;0\nStudent000853;207;4.99;1\nStudent001354;204;4.99;2\nStudent001855;201;4.99;3\nStudent002356;205;4.99;0\nStudent002857;202;4.99;1\nStudent003358;206;4.99;2\nStudent003859;203;4.99;3\nStudent004360;207;4.99;0\nStudent004861;204;4.99;1\nStudent005362;201;4.99;2\nStudent005863;205;4.99;3\nStudent006364;202;4.99;0\nStudent006865;206;4.99;1\nStudent007366;203;4.99;2\nStudent007867;207;4.99;3\nStudent008368;204;4.99;0\nStudent008869;201;4.99;1\nStudent009370;205;4.99;2\nStudent009871;202;4.99;3\nStudent010372;206;4.99;0\nStudent010873;203;4.99;1\nStudent011374;207;4.99;2\nStudent011875;204;4.99;3\nStudent012376;201;4.99;0\nStudent012877;205;4.99;1\nStudent013378;202;4.99;2\nStudent013879;206;4.99;3\nStudent014380;203;4.99;0\nStudent014881;207;4.99;1\nStudent015382;204;4.99;2\nStudent015883;201;4.99;3\nStudent016384;205;4.99;0\nStudent016885;202;4.99;1\nStudent017386;206;4.99;2\nStudent017887;203;4.99;3\nStudent018388;207;4.99;0\nStudent018889;204;4.99;1\nStudent019390;201;4.99;2\nStudent019891;205;4.99;3\nStudent020392;202;4.99;0\nStudent020893;206;4.99;1\nStudent021394;203;4.99;2\nStudent021895;207;4.99;3\nStudent022396;204;4.99;0\nStudent022897;201;4.99;1\nStudent023398;205;4.99;2\nStudent023899;202;4.99;3\nStudent024400;206;4.99;0\nStudent024901;203;4.99;1\nStudent025402;207;4.99;2\nStudent025903;204;4.99;3\nStudent026404;201;4.99;0\nStudent026905;205;4.99;1\nStudent027406;202;4.99;2\nStudent027907;206;4.99;3\nStudent028408;203;4.99;0\nStudent028909;207;4.99;1\nStudent029410;204;4.99;2\nStudent029911;201;4.99;3\nStudent030412;205;4.99;0\nStudent030913;202;4.99;1\nStudent031414;206;4.99;2\nStudent031915;203;4.99;3\nStudent032416;207;4.99;0\nStudent032917;204;4.99;1\nStudent033418;201;4.99;2\nStudent033919;205;4.99;3\nStudent034420;202;4.99;0\nStudent034921;206;4.99;1\nStudent035422;203;4.99;2\nStudent035923;207;4.99;3\nStudent036424;204;4.99;0\nStudent036925;201;4.99;1\nStudent037426;205;4.99;2\nStudent037927;202;4.99;3\nStudent038428;206;4.99;0\nStudent038929;203;4.99;1\nStudent039430;207;4.99;2\nStudent039931;204;4.99;3\nStudent000027;207;4.98;3\nStudent000528;204;4.98;0\nStudent001029;201;4.98;1\nStudent001530;205;4.98;2\nStudent002031;202;4.98;3\nStudent002532;206;4.98;0\nStudent003033;203;4.98;1\nStudent003534;207;4.98;2\nStudent004035;204;4.98;3\nStudent004536;201;4.98;0\nStudent005037;205;4.98;1\nStudent005538;202;4.98;2\nStudent006039;206;4.98;3\nStudent006540;203;4.98;0\nStudent007041;207;4.98;1\nStudent007542;204;4.98;2\nStudent008043;201;4.98;3\nStudent008544;205;4.98;0\nStudent009045;202;4.98;1\nStudent009546;206;4.98;2\nStudent010047;203;4.98;3\nStudent010548;207;4.98;0\nStudent011049;204;4.98;1\nStudent011550;201;4.98;2\nStudent012051;205;4.98;3\nStudent012552;202;4.98;0\nStudent013053;206;4.98;1\nStudent013554;203;4.98;2\nStudent014055;207;4.98;3\nStudent014556;204;4.98;0\nStudent015057;201;4.98;1\nStudent015558;205;4.98;2\nStudent016059;202;4.98;3\nStudent016560;206;4.98;0\nStudent017061;203;4.98;1\nStudent017562;207;4.98;2\nStudent018063;204;4.98;3\nStudent018564;201;4.98;0\nStudent019065;205;4.98;1\nStudent019566;202;4",
+              "input_lines": 40002,
+              "time_sec": 0.0082,
+              "actual_output": "15968\nStudent000176;202;5.00;0\nStudent000677;206;5.00;1\nStudent001178;203;5.00;2\nStudent001679;207;5.00;3\nStudent002180;204;5.00;0\nStudent002681;201;5.00;1\nStudent003182;205;5.00;2\nStudent003683;202;5.00;3\nStudent004184;206;5.00;0\nStudent004685;203;5.00;1\nStudent005186;207;5.00;2\nStudent005687;204;5.00;3\nStudent006188;201;5.00;0\nStudent006689;205;5.00;1\nStudent007190;202;5.00;2\nStudent007691;206;5.00;3\nStudent008192;203;5.00;0\nStudent008693;207;5.00;1\nStudent009194;204;5.00;2\nStudent009695;201;5.00;3\nStudent010196;205;5.00;0\nStudent010697;202;5.00;1\nStudent011198;206;5.00;2\nStudent011699;203;5.00;3\nStudent012200;207;5.00;0\nStudent012701;204;5.00;1\nStudent013202;201;5.00;2\nStudent013703;205;5.00;3\nStudent014204;202;5.00;0\nStudent014705;206;5.00;1\nStudent015206;203;5.00;2\nStudent015707;207;5.00;3\nStudent016208;204;5.00;0\nStudent016709;201;5.00;1\nStudent017210;205;5.00;2\nStudent017711;202;5.00;3\nStudent018212;206;5.00;0\nStudent018713;203;5.00;1\nStudent019214;207;5.00;2\nStudent019715;204;5.00;3\nStudent020216;201;5.00;0\nStudent020717;205;5.00;1\nStudent021218;202;5.00;2\nStudent021719;206;5.00;3\nStudent022220;203;5.00;0\nStudent022721;207;5.00;1\nStudent023222;204;5.00;2\nStudent023723;201;5.00;3\nStudent024224;205;5.00;0\nStudent024725;202;5.00;1\nStudent025226;206;5.00;2\nStudent025727;203;5.00;3\nStudent026228;207;5.00;0\nStudent026729;204;5.00;1\nStudent027230;201;5.00;2\nStudent027731;205;5.00;3\nStudent028232;202;5.00;0\nStudent028733;206;5.00;1\nStudent029234;203;5.00;2\nStudent029735;207;5.00;3\nStudent030236;204;5.00;0\nStudent030737;201;5.00;1\nStudent031238;205;5.00;2\nStudent031739;202;5.00;3\nStudent032240;206;5.00;0\nStudent032741;203;5.00;1\nStudent033242;207;5.00;2\nStudent033743;204;5.00;3\nStudent034244;201;5.00;0\nStudent034745;205;5.00;1\nStudent035246;202;5.00;2\nStudent035747;206;5.00;3\nStudent036248;203;5.00;0\nStudent036749;207;5.00;1\nStudent037250;204;5.00;2\nStudent037751;201;5.00;3\nStudent038252;205;5.00;0\nStudent038753;202;5.00;1\nStudent039254;206;5.00;2\nStudent039755;203;5.00;3\nStudent000352;203;4.99;0\nStudent000853;207;4.99;1\nStudent001354;204;4.99;2\nStudent001855;201;4.99;3\nStudent002356;205;4.99;0\nStudent002857;202;4.99;1\nStudent003358;206;4.99;2\nStudent003859;203;4.99;3\nStudent004360;207;4.99;0\nStudent004861;204;4.99;1\nStudent005362;201;4.99;2\nStudent005863;205;4.99;3\nStudent006364;202;4.99;0\nStudent006865;206;4.99;1\nStudent007366;203;4.99;2\nStudent007867;207;4.99;3\nStudent008368;204;4.99;0\nStudent008869;201;4.99;1\nStudent009370;205;4.99;2\nStudent009871;202;4.99;3\nStudent010372;206;4.99;0\nStudent010873;203;4.99;1\nStudent011374;207;4.99;2\nStudent011875;204;4.99;3\nStudent012376;201;4.99;0\nStudent012877;205;4.99;1\nStudent013378;202;4.99;2\nStudent013879;206;4.99;3\nStudent014380;203;4.99;0\nStudent014881;207;4.99;1\nStudent015382;204;4.99;2\nStudent015883;201;4.99;3\nStudent016384;205;4.99;0\nStudent016885;202;4.99;1\nStudent017386;206;4.99;2\nStudent017887;203;4.99;3\nStudent018388;207;4.99;0\nStudent018889;204;4.99;1\nStudent019390;201;4.99;2\nStudent019891;205;4.99;3\nStudent020392;202;4.99;0\nStudent020893;206;4.99;1\nStudent021394;203;4.99;2\nStudent021895;207;4.99;3\nStudent022396;204;4.99;0\nStudent022897;201;4.99;1\nStudent023398;205;4.99;2\nStudent023899;202;4.99;3\nStudent024400;206;4.99;0\nStudent024901;203;4.99;1\nStudent025402;207;4.99;2\nStudent025903;204;4.99;3\nStudent026404;201;4.99;0\nStudent026905;205;4.99;1\nStudent027406;202;4.99;2\nStudent027907;206;4.99;3\nStudent028408;203;4.99;0\nStudent028909;207;4.99;1\nStudent029410;204;4.99;2\nStudent029911;201;4.99;3\nStudent030412;205;4.99;0\nStudent030913;202;4.99;1\nStudent031414;206;4.99;2\nStudent031915;203;4.99;3\nStudent032416;207;4.99;0\nStudent032917;204;4.99;1\nStudent033418;201;4.99;2\nStudent033919;205;4.99;3\nStudent034420;202;4.99;0\nStudent034921;206;4.99;1\nStudent035422;203;4.99;2\nStudent035923;207;4.99;3\nStudent036424;204;4.99;0\nStudent036925;201;4.99;1\nStudent037426;205;4.99;2\nStudent037927;202;4.99;3\nStudent038428;206;4.99;0\nStudent038929;203;4.99;1\nStudent039430;207;4.99;2\nStudent039931;204;4.99;3\nStudent000027;207;4.98;3\nStudent000528;204;4.98;0\nStudent001029;201;4.98;1\nStudent001530;205;4.98;2\nStudent002031;202;4.98;3\nStudent002532;206;4.98;0\nStudent003033;203;4.98;1\nStudent003534;207;4.98;2\nStudent004035;204;4.98;3\nStudent004536;201;4.98;0\nStudent005037;205;4.98;1\nStudent005538;202;4.98;2\nStudent006039;206;4.98;3\nStudent006540;203;4.98;0\nStudent007041;207;4.98;1\nStudent007542;204;4.98;2\nStudent008043;201;4.98;3\nStudent008544;205;4.98;0\nStudent009045;202;4.98;1\nStudent009546;206;4.98;2\nStudent010047;203;4.98;3\nStudent010548;207;4.98;0\nStudent011049;204;4.98;1\nStudent011550;201;4.98;2\nStudent012051;205;4.98;3\nStudent012552;202;4.98;0\nStudent013053;206;4.98;1\nStudent013554;203;4.98;2\nStudent014055;207;4.98;3\nStudent014556;204;4.98;0\nStudent015057;201;4.98;1\nStudent015558;205;4.98;2\nStudent016059;202;4.98;3\nStudent016560;206;4.98;0\nStudent017061;203;4.98;1\nStudent017562;207;4.98;2\nStudent018063;204;4.98;3\nStudent018564;201;4.98;0\nStudent019065;205;4.98;1\nStudent019566;202;4",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "01_large_40000",
+              "path": "attacks/team5/01_large_40000"
+            },
+            {
+              "skipped": false,
+              "input": "60000\n3.0\nStudent000000;201;0.00;0\nStudent000001;202;0.37;1\nStudent000002;203;0.74;2\nStudent000003;204;1.11;3\nStudent000004;205;1.48;0\nStudent000005;206;1.85;1\nStudent000006;207;2.22;2\nStudent000007;201;2.59;3\nStudent000008;202;2.96;0\nStudent000009;203;3.33;1\nStudent000010;204;3.70;2\nStudent000011;205;4.07;3\nStudent000012;206;4.44;0\nStudent000013;207;4.81;1\nStudent000014;201;0.17;2\nStudent000015;202;0.54;3\nStudent000016;203;0.91;0\nStudent000017;204;1.28;1\nStudent000018;205;1.65;2\nStudent000019;206;2.02;3\nStudent000020;207;2.39;0\nStudent000021;201;2.76;1\nStudent000022;202;3.13;2\nStudent000023;203;3.50;3\nStudent000024;204;3.87;0\nStudent000025;205;4.24;1\nStudent000026;206;4.61;2\nStudent000027;207;4.98;3\nStudent000028;201;0.34;0\nStudent000029;202;0.71;1\nStudent000030;203;1.08;2\nStudent000031;204;1.45;3\nStudent000032;205;1.82;0\nStudent000033;206;2.19;1\nStudent000034;207;2.56;2\nStudent000035;201;2.93;3\nStudent000036;202;3.30;0\nStudent000037;203;3.67;1\nStudent000038;204;4.04;2\nStudent000039;205;4.41;3\nStudent000040;206;4.78;0\nStudent000041;207;0.14;1\nStudent000042;201;0.51;2\nStudent000043;202;0.88;3\nStudent000044;203;1.25;0\nStudent000045;204;1.62;1\nStudent000046;205;1.99;2\nStudent000047;206;2.36;3\nStudent000048;207;2.73;0\nStudent000049;201;3.10;1\nStudent000050;202;3.47;2\nStudent000051;203;3.84;3\nStudent000052;204;4.21;0\nStudent000053;205;4.58;1\nStudent000054;206;4.95;2\nStudent000055;207;0.31;3\nStudent000056;201;0.68;0\nStudent000057;202;1.05;1\nStudent000058;203;1.42;2\nStudent000059;204;1.79;3\nStudent000060;205;2.16;0\nStudent000061;206;2.53;1\nStudent000062;207;2.90;2\nStudent000063;201;3.27;3\nStudent000064;202;3.64;0\nStudent000065;203;4.01;1\nStudent000066;204;4.38;2\nStudent000067;205;4.75;3\nStudent000068;206;0.11;0\nStudent000069;207;0.48;1\nStudent000070;201;0.85;2\nStudent000071;202;1.22;3\nStudent000072;203;1.59;0\nStudent000073;204;1.96;1\nStudent000074;205;2.33;2\nStudent000075;206;2.70;3\nStudent000076;207;3.07;0\nStudent000077;201;3.44;1\nStudent000078;202;3.81;2\nStudent000079;203;4.18;3\nStudent000080;204;4.55;0\nStudent000081;205;4.92;1\nStudent000082;206;0.28;2\nStudent000083;207;0.65;3\nStudent000084;201;1.02;0\nStudent000085;202;1.39;1\nStudent000086;203;1.76;2\nStudent000087;204;2.13;3\nStudent000088;205;2.50;0\nStudent000089;206;2.87;1\nStudent000090;207;3.24;2\nStudent000091;201;3.61;3\nStudent000092;202;3.98;0\nStudent000093;203;4.35;1\nStudent000094;204;4.72;2\nStudent000095;205;0.08;3\nStudent000096;206;0.45;0\nStudent000097;207;0.82;1\nStudent000098;201;1.19;2\nStudent000099;202;1.56;3\nStudent000100;203;1.93;0\nStudent000101;204;2.30;1\nStudent000102;205;2.67;2\nStudent000103;206;3.04;3\nStudent000104;207;3.41;0\nStudent000105;201;3.78;1\nStudent000106;202;4.15;2\nStudent000107;203;4.52;3\nStudent000108;204;4.89;0\nStudent000109;205;0.25;1\nStudent000110;206;0.62;2\nStudent000111;207;0.99;3\nStudent000112;201;1.36;0\nStudent000113;202;1.73;1\nStudent000114;203;2.10;2\nStudent000115;204;2.47;3\nStudent000116;205;2.84;0\nStudent000117;206;3.21;1\nStudent000118;207;3.58;2\nStudent000119;201;3.95;3\nStudent000120;202;4.32;0\nStudent000121;203;4.69;1\nStudent000122;204;0.05;2\nStudent000123;205;0.42;3\nStudent000124;206;0.79;0\nStudent000125;207;1.16;1\nStudent000126;201;1.53;2\nStudent000127;202;1.90;3\nStudent000128;203;2.27;0\nStudent000129;204;2.64;1\nStudent000130;205;3.01;2\nStudent000131;206;3.38;3\nStudent000132;207;3.75;0\nStudent000133;201;4.12;1\nStudent000134;202;4.49;2\nStudent000135;203;4.86;3\nStudent000136;204;0.22;0\nStudent000137;205;0.59;1\nStudent000138;206;0.96;2\nStudent000139;207;1.33;3\nStudent000140;201;1.70;0\nStudent000141;202;2.07;1\nStudent000142;203;2.44;2\nStudent000143;204;2.81;3\nStudent000144;205;3.18;0\nStudent000145;206;3.55;1\nStudent000146;207;3.92;2\nStudent000147;201;4.29;3\nStudent000148;202;4.66;0\nStudent000149;203;0.02;1\nStudent000150;204;0.39;2\nStudent000151;205;0.76;3\nStudent000152;206;1.13;0\nStudent000153;207;1.50;1\nStudent000154;201;1.87;2\nStudent000155;202;2.24;3\nStudent000156;203;2.61;0\nStudent000157;204;2.98;1\nStudent000158;205;3.35;2\nStudent000159;206;3.72;3\nStudent000160;207;4.09;0\nStudent000161;201;4.46;1\nStudent000162;202;4.83;2\nStudent000163;203;0.19;3\nStudent000164;204;0.56;0\nStudent000165;205;0.93;1\nStudent000166;206;1.30;2\nStudent000167;207;1.67;3\nStudent000168;201;2.04;0\nStudent000169;202;2.41;1\nStudent000170;203;2.78;2\nStudent000171;204;3.15;3\nStudent000172;205;3.52;0\nStudent000173;206;3.89;1\nStudent000174;207;4.26;2\nStudent000175;201;4.63;3\nStudent000176;202;5.00;0\nStudent000177;203;0.36;1\nStudent000178;204;0.73;2\nStudent000179;205;1.10;3\nStudent000180;206;1.47;0\nStudent000181;207;1.84;1\nStudent000182;201;2.21;2\nStudent000183;202;2.58;3\nStudent000184;203;2.95;0\nStudent000185;204;3.32;1\nStudent000186;205;3.69;2\nStudent000187;206;4.06;3\nStudent000188;207;4.43;0\nStudent000189;201;4.80;1\nStudent000190;202;0.16;2\nStudent000191;203;0.53;3\nStudent000192;204;0.90;0\nStudent000193;205;1.27;1\nStudent000194;206;1.64;2\nStudent000195;207;2.01;3\nStudent000196;201;2.38;0\nStudent000197;202;2.75;1\nStudent000198;203;3.12;2\nStudent000199;2",
+              "expected_output": "23952\nStudent000176;202;5.00;0\nStudent000677;206;5.00;1\nStudent001178;203;5.00;2\nStudent001679;207;5.00;3\nStudent002180;204;5.00;0\nStudent002681;201;5.00;1\nStudent003182;205;5.00;2\nStudent003683;202;5.00;3\nStudent004184;206;5.00;0\nStudent004685;203;5.00;1\nStudent005186;207;5.00;2\nStudent005687;204;5.00;3\nStudent006188;201;5.00;0\nStudent006689;205;5.00;1\nStudent007190;202;5.00;2\nStudent007691;206;5.00;3\nStudent008192;203;5.00;0\nStudent008693;207;5.00;1\nStudent009194;204;5.00;2\nStudent009695;201;5.00;3\nStudent010196;205;5.00;0\nStudent010697;202;5.00;1\nStudent011198;206;5.00;2\nStudent011699;203;5.00;3\nStudent012200;207;5.00;0\nStudent012701;204;5.00;1\nStudent013202;201;5.00;2\nStudent013703;205;5.00;3\nStudent014204;202;5.00;0\nStudent014705;206;5.00;1\nStudent015206;203;5.00;2\nStudent015707;207;5.00;3\nStudent016208;204;5.00;0\nStudent016709;201;5.00;1\nStudent017210;205;5.00;2\nStudent017711;202;5.00;3\nStudent018212;206;5.00;0\nStudent018713;203;5.00;1\nStudent019214;207;5.00;2\nStudent019715;204;5.00;3\nStudent020216;201;5.00;0\nStudent020717;205;5.00;1\nStudent021218;202;5.00;2\nStudent021719;206;5.00;3\nStudent022220;203;5.00;0\nStudent022721;207;5.00;1\nStudent023222;204;5.00;2\nStudent023723;201;5.00;3\nStudent024224;205;5.00;0\nStudent024725;202;5.00;1\nStudent025226;206;5.00;2\nStudent025727;203;5.00;3\nStudent026228;207;5.00;0\nStudent026729;204;5.00;1\nStudent027230;201;5.00;2\nStudent027731;205;5.00;3\nStudent028232;202;5.00;0\nStudent028733;206;5.00;1\nStudent029234;203;5.00;2\nStudent029735;207;5.00;3\nStudent030236;204;5.00;0\nStudent030737;201;5.00;1\nStudent031238;205;5.00;2\nStudent031739;202;5.00;3\nStudent032240;206;5.00;0\nStudent032741;203;5.00;1\nStudent033242;207;5.00;2\nStudent033743;204;5.00;3\nStudent034244;201;5.00;0\nStudent034745;205;5.00;1\nStudent035246;202;5.00;2\nStudent035747;206;5.00;3\nStudent036248;203;5.00;0\nStudent036749;207;5.00;1\nStudent037250;204;5.00;2\nStudent037751;201;5.00;3\nStudent038252;205;5.00;0\nStudent038753;202;5.00;1\nStudent039254;206;5.00;2\nStudent039755;203;5.00;3\nStudent040256;207;5.00;0\nStudent040757;204;5.00;1\nStudent041258;201;5.00;2\nStudent041759;205;5.00;3\nStudent042260;202;5.00;0\nStudent042761;206;5.00;1\nStudent043262;203;5.00;2\nStudent043763;207;5.00;3\nStudent044264;204;5.00;0\nStudent044765;201;5.00;1\nStudent045266;205;5.00;2\nStudent045767;202;5.00;3\nStudent046268;206;5.00;0\nStudent046769;203;5.00;1\nStudent047270;207;5.00;2\nStudent047771;204;5.00;3\nStudent048272;201;5.00;0\nStudent048773;205;5.00;1\nStudent049274;202;5.00;2\nStudent049775;206;5.00;3\nStudent050276;203;5.00;0\nStudent050777;207;5.00;1\nStudent051278;204;5.00;2\nStudent051779;201;5.00;3\nStudent052280;205;5.00;0\nStudent052781;202;5.00;1\nStudent053282;206;5.00;2\nStudent053783;203;5.00;3\nStudent054284;207;5.00;0\nStudent054785;204;5.00;1\nStudent055286;201;5.00;2\nStudent055787;205;5.00;3\nStudent056288;202;5.00;0\nStudent056789;206;5.00;1\nStudent057290;203;5.00;2\nStudent057791;207;5.00;3\nStudent058292;204;5.00;0\nStudent058793;201;5.00;1\nStudent059294;205;5.00;2\nStudent059795;202;5.00;3\nStudent000352;203;4.99;0\nStudent000853;207;4.99;1\nStudent001354;204;4.99;2\nStudent001855;201;4.99;3\nStudent002356;205;4.99;0\nStudent002857;202;4.99;1\nStudent003358;206;4.99;2\nStudent003859;203;4.99;3\nStudent004360;207;4.99;0\nStudent004861;204;4.99;1\nStudent005362;201;4.99;2\nStudent005863;205;4.99;3\nStudent006364;202;4.99;0\nStudent006865;206;4.99;1\nStudent007366;203;4.99;2\nStudent007867;207;4.99;3\nStudent008368;204;4.99;0\nStudent008869;201;4.99;1\nStudent009370;205;4.99;2\nStudent009871;202;4.99;3\nStudent010372;206;4.99;0\nStudent010873;203;4.99;1\nStudent011374;207;4.99;2\nStudent011875;204;4.99;3\nStudent012376;201;4.99;0\nStudent012877;205;4.99;1\nStudent013378;202;4.99;2\nStudent013879;206;4.99;3\nStudent014380;203;4.99;0\nStudent014881;207;4.99;1\nStudent015382;204;4.99;2\nStudent015883;201;4.99;3\nStudent016384;205;4.99;0\nStudent016885;202;4.99;1\nStudent017386;206;4.99;2\nStudent017887;203;4.99;3\nStudent018388;207;4.99;0\nStudent018889;204;4.99;1\nStudent019390;201;4.99;2\nStudent019891;205;4.99;3\nStudent020392;202;4.99;0\nStudent020893;206;4.99;1\nStudent021394;203;4.99;2\nStudent021895;207;4.99;3\nStudent022396;204;4.99;0\nStudent022897;201;4.99;1\nStudent023398;205;4.99;2\nStudent023899;202;4.99;3\nStudent024400;206;4.99;0\nStudent024901;203;4.99;1\nStudent025402;207;4.99;2\nStudent025903;204;4.99;3\nStudent026404;201;4.99;0\nStudent026905;205;4.99;1\nStudent027406;202;4.99;2\nStudent027907;206;4.99;3\nStudent028408;203;4.99;0\nStudent028909;207;4.99;1\nStudent029410;204;4.99;2\nStudent029911;201;4.99;3\nStudent030412;205;4.99;0\nStudent030913;202;4.99;1\nStudent031414;206;4.99;2\nStudent031915;203;4.99;3\nStudent032416;207;4.99;0\nStudent032917;204;4.99;1\nStudent033418;201;4.99;2\nStudent033919;205;4.99;3\nStudent034420;202;4.99;0\nStudent034921;206;4.99;1\nStudent035422;203;4.99;2\nStudent035923;207;4.99;3\nStudent036424;204;4.99;0\nStudent036925;201;4.99;1\nStudent037426;205;4.99;2\nStudent037927;202;4.99;3\nStudent038428;206;4.99;0\nStudent038929;203;4.99;1\nStudent039430;207;4.99;2\nStudent039931;204;4",
+              "input_lines": 60002,
+              "time_sec": 0.0123,
+              "actual_output": "23952\nStudent000176;202;5.00;0\nStudent000677;206;5.00;1\nStudent001178;203;5.00;2\nStudent001679;207;5.00;3\nStudent002180;204;5.00;0\nStudent002681;201;5.00;1\nStudent003182;205;5.00;2\nStudent003683;202;5.00;3\nStudent004184;206;5.00;0\nStudent004685;203;5.00;1\nStudent005186;207;5.00;2\nStudent005687;204;5.00;3\nStudent006188;201;5.00;0\nStudent006689;205;5.00;1\nStudent007190;202;5.00;2\nStudent007691;206;5.00;3\nStudent008192;203;5.00;0\nStudent008693;207;5.00;1\nStudent009194;204;5.00;2\nStudent009695;201;5.00;3\nStudent010196;205;5.00;0\nStudent010697;202;5.00;1\nStudent011198;206;5.00;2\nStudent011699;203;5.00;3\nStudent012200;207;5.00;0\nStudent012701;204;5.00;1\nStudent013202;201;5.00;2\nStudent013703;205;5.00;3\nStudent014204;202;5.00;0\nStudent014705;206;5.00;1\nStudent015206;203;5.00;2\nStudent015707;207;5.00;3\nStudent016208;204;5.00;0\nStudent016709;201;5.00;1\nStudent017210;205;5.00;2\nStudent017711;202;5.00;3\nStudent018212;206;5.00;0\nStudent018713;203;5.00;1\nStudent019214;207;5.00;2\nStudent019715;204;5.00;3\nStudent020216;201;5.00;0\nStudent020717;205;5.00;1\nStudent021218;202;5.00;2\nStudent021719;206;5.00;3\nStudent022220;203;5.00;0\nStudent022721;207;5.00;1\nStudent023222;204;5.00;2\nStudent023723;201;5.00;3\nStudent024224;205;5.00;0\nStudent024725;202;5.00;1\nStudent025226;206;5.00;2\nStudent025727;203;5.00;3\nStudent026228;207;5.00;0\nStudent026729;204;5.00;1\nStudent027230;201;5.00;2\nStudent027731;205;5.00;3\nStudent028232;202;5.00;0\nStudent028733;206;5.00;1\nStudent029234;203;5.00;2\nStudent029735;207;5.00;3\nStudent030236;204;5.00;0\nStudent030737;201;5.00;1\nStudent031238;205;5.00;2\nStudent031739;202;5.00;3\nStudent032240;206;5.00;0\nStudent032741;203;5.00;1\nStudent033242;207;5.00;2\nStudent033743;204;5.00;3\nStudent034244;201;5.00;0\nStudent034745;205;5.00;1\nStudent035246;202;5.00;2\nStudent035747;206;5.00;3\nStudent036248;203;5.00;0\nStudent036749;207;5.00;1\nStudent037250;204;5.00;2\nStudent037751;201;5.00;3\nStudent038252;205;5.00;0\nStudent038753;202;5.00;1\nStudent039254;206;5.00;2\nStudent039755;203;5.00;3\nStudent040256;207;5.00;0\nStudent040757;204;5.00;1\nStudent041258;201;5.00;2\nStudent041759;205;5.00;3\nStudent042260;202;5.00;0\nStudent042761;206;5.00;1\nStudent043262;203;5.00;2\nStudent043763;207;5.00;3\nStudent044264;204;5.00;0\nStudent044765;201;5.00;1\nStudent045266;205;5.00;2\nStudent045767;202;5.00;3\nStudent046268;206;5.00;0\nStudent046769;203;5.00;1\nStudent047270;207;5.00;2\nStudent047771;204;5.00;3\nStudent048272;201;5.00;0\nStudent048773;205;5.00;1\nStudent049274;202;5.00;2\nStudent049775;206;5.00;3\nStudent050276;203;5.00;0\nStudent050777;207;5.00;1\nStudent051278;204;5.00;2\nStudent051779;201;5.00;3\nStudent052280;205;5.00;0\nStudent052781;202;5.00;1\nStudent053282;206;5.00;2\nStudent053783;203;5.00;3\nStudent054284;207;5.00;0\nStudent054785;204;5.00;1\nStudent055286;201;5.00;2\nStudent055787;205;5.00;3\nStudent056288;202;5.00;0\nStudent056789;206;5.00;1\nStudent057290;203;5.00;2\nStudent057791;207;5.00;3\nStudent058292;204;5.00;0\nStudent058793;201;5.00;1\nStudent059294;205;5.00;2\nStudent059795;202;5.00;3\nStudent000352;203;4.99;0\nStudent000853;207;4.99;1\nStudent001354;204;4.99;2\nStudent001855;201;4.99;3\nStudent002356;205;4.99;0\nStudent002857;202;4.99;1\nStudent003358;206;4.99;2\nStudent003859;203;4.99;3\nStudent004360;207;4.99;0\nStudent004861;204;4.99;1\nStudent005362;201;4.99;2\nStudent005863;205;4.99;3\nStudent006364;202;4.99;0\nStudent006865;206;4.99;1\nStudent007366;203;4.99;2\nStudent007867;207;4.99;3\nStudent008368;204;4.99;0\nStudent008869;201;4.99;1\nStudent009370;205;4.99;2\nStudent009871;202;4.99;3\nStudent010372;206;4.99;0\nStudent010873;203;4.99;1\nStudent011374;207;4.99;2\nStudent011875;204;4.99;3\nStudent012376;201;4.99;0\nStudent012877;205;4.99;1\nStudent013378;202;4.99;2\nStudent013879;206;4.99;3\nStudent014380;203;4.99;0\nStudent014881;207;4.99;1\nStudent015382;204;4.99;2\nStudent015883;201;4.99;3\nStudent016384;205;4.99;0\nStudent016885;202;4.99;1\nStudent017386;206;4.99;2\nStudent017887;203;4.99;3\nStudent018388;207;4.99;0\nStudent018889;204;4.99;1\nStudent019390;201;4.99;2\nStudent019891;205;4.99;3\nStudent020392;202;4.99;0\nStudent020893;206;4.99;1\nStudent021394;203;4.99;2\nStudent021895;207;4.99;3\nStudent022396;204;4.99;0\nStudent022897;201;4.99;1\nStudent023398;205;4.99;2\nStudent023899;202;4.99;3\nStudent024400;206;4.99;0\nStudent024901;203;4.99;1\nStudent025402;207;4.99;2\nStudent025903;204;4.99;3\nStudent026404;201;4.99;0\nStudent026905;205;4.99;1\nStudent027406;202;4.99;2\nStudent027907;206;4.99;3\nStudent028408;203;4.99;0\nStudent028909;207;4.99;1\nStudent029410;204;4.99;2\nStudent029911;201;4.99;3\nStudent030412;205;4.99;0\nStudent030913;202;4.99;1\nStudent031414;206;4.99;2\nStudent031915;203;4.99;3\nStudent032416;207;4.99;0\nStudent032917;204;4.99;1\nStudent033418;201;4.99;2\nStudent033919;205;4.99;3\nStudent034420;202;4.99;0\nStudent034921;206;4.99;1\nStudent035422;203;4.99;2\nStudent035923;207;4.99;3\nStudent036424;204;4.99;0\nStudent036925;201;4.99;1\nStudent037426;205;4.99;2\nStudent037927;202;4.99;3\nStudent038428;206;4.99;0\nStudent038929;203;4.99;1\nStudent039430;207;4.99;2\nStudent039931;204;4",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "02_large_60000",
+              "path": "attacks/team5/02_large_60000"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nA;-1;4.0;0\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0016,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "03_negative_group",
+              "path": "attacks/team5/03_negative_group"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nA;1;-0.1;0\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "04_negative_gpa",
+              "path": "attacks/team5/04_negative_gpa"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nA;1;4.0;0;\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0011,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "05_extra_semicolon",
+              "path": "attacks/team5/05_extra_semicolon"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 20,
+        "total": 20,
+        "ratio": 1.0,
+        "held": true
+      },
+      "id": "attack-3-e07b24d",
+      "timestamp": "2026-11-25T18:41:48.383323+00:00"
     }
   ]
 }
