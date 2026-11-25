@@ -1,7 +1,7 @@
 {
   "mode": "attack",
   "complete": true,
-  "updated": "2026-11-25T18:52:50.871434+00:00",
+  "updated": "2026-11-25T18:53:15.558655+00:00",
   "targets": [
     {
       "target": "1",
@@ -56,21 +56,21 @@
     {
       "target": "2",
       "branch": "attack-2",
-      "id": "attack-2-fe19f56",
-      "commit": "fe19f565d962b2173d8b8691df4dda8a03b70bae",
-      "timestamp": "2026-11-25T18:37:22.932087+00:00",
+      "id": "attack-2-a639520",
+      "commit": "a6395207cf148b616eb92e6850abd01ff0879939",
+      "timestamp": "2026-11-25T18:53:15.558655+00:00",
       "solution_rev": 0,
       "attacks_rev": {
         "1": 0,
         "3": 0,
-        "4": 0,
+        "4": 1,
         "5": 0
       },
       "defense": {
-        "passed": 20,
+        "passed": 15,
         "total": 20,
-        "ratio": 1.0,
-        "held": true
+        "ratio": 0.75,
+        "held": false
       },
       "attackers": [
         {
@@ -89,10 +89,10 @@
         },
         {
           "team": "4",
-          "passed": 5,
+          "passed": 0,
           "total": 5,
-          "failed": 0,
-          "revision": 0
+          "failed": 5,
+          "revision": 1
         },
         {
           "team": "5",
@@ -278,16 +278,16 @@
       ],
       "solution_rev": 0,
       "attack_points": 2,
-      "attack_total": 40,
-      "attack_ratio": 0.05,
-      "attack_quality": 0.05,
+      "attack_total": 45,
+      "attack_ratio": 0.0444,
+      "attack_quality": 0.0444,
       "attack_coverage": 1.0,
       "attack_attempts": [
         {
           "target": "2",
           "revision": 0,
           "failed": 0,
-          "total": 5,
+          "total": 10,
           "ratio": 0.0
         },
         {
@@ -329,8 +329,8 @@
       "attack_revs": 2,
       "avg_time": 0.0032,
       "time_per_line": 4.5e-07,
-      "speed_quality": 0.8721,
-      "score": 62.69,
+      "speed_quality": 0.8038,
+      "score": 61.16,
       "defense_points": 35,
       "total_points": 37
     },
@@ -338,21 +338,21 @@
       "team": "2",
       "order": 1,
       "defense": {
-        "passed": 20,
+        "passed": 15,
         "total": 20,
-        "ratio": 1.0,
-        "held": true
+        "ratio": 0.75,
+        "held": false
       },
-      "defense_quality": 1.0,
+      "defense_quality": 0.875,
       "defense_coverage": 1.0,
-      "defense_passed": 20,
-      "defense_total": 20,
+      "defense_passed": 35,
+      "defense_total": 40,
       "defense_attempts": [
         {
           "revision": 0,
-          "passed": 20,
-          "total": 20,
-          "ratio": 1.0
+          "passed": 35,
+          "total": 40,
+          "ratio": 0.875
         }
       ],
       "solution_rev": 0,
@@ -406,12 +406,12 @@
         }
       ],
       "attack_revs": 2,
-      "avg_time": 0.0027,
-      "time_per_line": 3.9e-07,
+      "avg_time": 0.0025,
+      "time_per_line": 3.6e-07,
       "speed_quality": 1.0,
-      "score": 70.0,
-      "defense_points": 20,
-      "total_points": 20
+      "score": 63.75,
+      "defense_points": 35,
+      "total_points": 35
     },
     {
       "team": "3",
@@ -436,9 +436,9 @@
       ],
       "solution_rev": 0,
       "attack_points": 2,
-      "attack_total": 45,
-      "attack_ratio": 0.0444,
-      "attack_quality": 0.0444,
+      "attack_total": 50,
+      "attack_ratio": 0.04,
+      "attack_quality": 0.04,
       "attack_coverage": 1.0,
       "attack_attempts": [
         {
@@ -452,7 +452,7 @@
           "target": "2",
           "revision": 0,
           "failed": 0,
-          "total": 5,
+          "total": 10,
           "ratio": 0.0
         },
         {
@@ -487,8 +487,8 @@
       "attack_revs": 2,
       "avg_time": 0.0021,
       "time_per_line": 4e-07,
-      "speed_quality": 0.9829,
-      "score": 70.99,
+      "speed_quality": 0.9059,
+      "score": 69.32,
       "defense_points": 20,
       "total_points": 22
     },
@@ -526,10 +526,10 @@
         }
       ],
       "solution_rev": 2,
-      "attack_points": 5,
-      "attack_total": 25,
-      "attack_ratio": 0.2,
-      "attack_quality": 0.2,
+      "attack_points": 10,
+      "attack_total": 30,
+      "attack_ratio": 0.3333,
+      "attack_quality": 0.3333,
       "attack_coverage": 1.0,
       "attack_attempts": [
         {
@@ -554,6 +554,13 @@
           "ratio": 0.0
         },
         {
+          "target": "2",
+          "revision": 1,
+          "failed": 5,
+          "total": 5,
+          "ratio": 1.0
+        },
+        {
           "target": "3",
           "revision": 0,
           "failed": 0,
@@ -568,13 +575,13 @@
           "ratio": 0.0
         }
       ],
-      "attack_revs": 1,
+      "attack_revs": 2,
       "avg_time": 0.0018,
       "time_per_line": 6.4e-07,
-      "speed_quality": 0.6151,
-      "score": 66.3,
+      "speed_quality": 0.5669,
+      "score": 69.34,
       "defense_points": 96,
-      "total_points": 101
+      "total_points": 106
     },
     {
       "team": "5",
@@ -599,7 +606,7 @@
       ],
       "solution_rev": 0,
       "attack_points": 0,
-      "attack_total": 45,
+      "attack_total": 50,
       "attack_ratio": 0.0,
       "attack_quality": 0.0,
       "attack_coverage": 1.0,
@@ -615,7 +622,7 @@
           "target": "2",
           "revision": 0,
           "failed": 0,
-          "total": 5,
+          "total": 10,
           "ratio": 0.0
         },
         {
@@ -650,13 +657,13 @@
       "attack_revs": 2,
       "avg_time": 0.0014,
       "time_per_line": 6.7e-07,
-      "speed_quality": 0.5854,
-      "score": 61.71,
+      "speed_quality": 0.5395,
+      "score": 60.79,
       "defense_points": 20,
       "total_points": 20
     }
   ],
-  "winner": "3",
+  "winner": "4",
   "scoring": {
     "defense_weight": 50,
     "attack_weight": 30,
