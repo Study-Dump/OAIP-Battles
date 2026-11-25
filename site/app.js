@@ -287,24 +287,75 @@ function solutionDiffs(target) {
   for (let index = 1; index < revisions.length; index += 1) {
     const from = revisions[index - 1];
     const to = revisions[index];
-    const before = defenseTestMap(byRevision.get(from));
-    const after = defenseTestMap(byRevision.get(to));
+    const beforeEntry = byRevision.get(from);
+    const afterEntry = byRevision.get(to);
+    const before = defenseTestMap(beforeEntry);
+    const after = defenseTestMap(afterEntry);
     const changes = [];
 
     after.forEach((test, path) => {
       const old = before.get(path);
-      if (!old || Boolean(old.passed) === Boolean(test.passed)) return;
-      changes.push({ path, before: old, after: test });
+      if (!old) {
+        changes.push({ type: 'added', path, before: null, after: test });
+        return;
+      }
+      if (Boolean(old.passed) !== Boolean(test.passed)) {
+        changes.push({ type: 'changed', path, before: old, after: test });
+      }
     });
 
-    diffs.push({ from, to, changes });
+    before.forEach((test, path) => {
+      if (!after.has(path)) {
+        changes.push({ type: 'removed', path, before: test, after: null });
+      }
+    });
+
+    changes.sort((a, b) => a.path.localeCompare(b.path));
+    diffs.push({
+      from,
+      to,
+      changes,
+      beforeDefense: beforeEntry?.defense || { passed: 0, total: 0 },
+      afterDefense: afterEntry?.defense || { passed: 0, total: 0 },
+    });
   }
 
   return diffs;
 }
 
-function outcomeLabel(test) {
-  return test?.passed ? 'пройден' : 'провал';
+function outcomeBadge(test) {
+  return test?.passed
+    ? '<span class="outcome pass">пройден</span>'
+    : '<span class="outcome fail">провал</span>';
+}
+
+function renderSolutionChange(change) {
+  if (change.type === 'added') {
+    return `
+      <li>
+        <code>${esc(change.path)}</code>
+        <span class="muted">добавлен</span>
+        ${outcomeBadge(change.after)}
+      </li>
+    `;
+  }
+  if (change.type === 'removed') {
+    return `
+      <li>
+        <code>${esc(change.path)}</code>
+        ${outcomeBadge(change.before)}
+        <span class="muted">убран</span>
+      </li>
+    `;
+  }
+  return `
+    <li>
+      <code>${esc(change.path)}</code>
+      ${outcomeBadge(change.before)}
+      <span class="muted">→</span>
+      ${outcomeBadge(change.after)}
+    </li>
+  `;
 }
 
 function renderSolutionDiffs(target, compact = false) {
@@ -316,24 +367,22 @@ function renderSolutionDiffs(target, compact = false) {
     <details class="solution-revisions${compact ? ' compact' : ''}">
       <summary>Изменения решения <span class="count">${changeCount}</span></summary>
       <div class="solution-diff-list">
-        ${diffs.map((diff) => `
-          <div class="solution-diff">
-            <div class="solution-diff-head">
-              <span class="revision-tag solution">защита</span>
-              <span>попытка ${diff.from + 1} → попытка ${diff.to + 1}</span>
+        ${diffs.map((diff) => {
+          const before = diff.beforeDefense || {};
+          const after = diff.afterDefense || {};
+          return `
+            <div class="solution-diff">
+              <div class="solution-diff-head">
+                <span class="revision-tag solution">защита</span>
+                <span>попытка ${diff.from + 1} → попытка ${diff.to + 1}</span>
+                <span class="muted">${before.passed ?? 0}/${before.total ?? 0} → ${after.passed ?? 0}/${after.total ?? 0} тестов</span>
+              </div>
+              ${diff.changes.length
+                ? `<ul class="solution-diff-items">${diff.changes.map(renderSolutionChange).join('')}</ul>`
+                : '<p class="muted">Результаты тестов не изменились.</p>'}
             </div>
-            ${diff.changes.length
-              ? `<ul class="solution-diff-items">${diff.changes.map((change) => `
-                  <li>
-                    <code>${esc(change.path)}</code>
-                    <span class="outcome fail">${outcomeLabel(change.before)}</span>
-                    <span class="muted">→</span>
-                    <span class="outcome pass">${outcomeLabel(change.after)}</span>
-                  </li>
-                `).join('')}</ul>`
-              : '<p class="muted">Результаты тестов не изменились.</p>'}
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
     </details>
   `;
@@ -346,6 +395,22 @@ function formatSeconds(value) {
   return seconds < 1
     ? `${(seconds * 1000).toFixed(1)} мс`
     : `${seconds.toFixed(3)} с`;
+}
+
+function testStats(tests) {
+  const list = (Array.isArray(tests) ? tests : []).filter((test) => !test.skipped);
+  let total = 0;
+  let lines = 0;
+  list.forEach((test) => {
+    total += Number(test.time_sec ?? 0);
+    lines += Number(test.input_lines ?? 0);
+  });
+  return {
+    count: list.length,
+    total,
+    lines,
+    perLine: total / Math.max(1, lines),
+  };
 }
 
 function testChanges(previous, current) {
@@ -458,7 +523,7 @@ function renderAttackRevision(target, team, selected) {
 
   return `
     <tr class="attack-revision-row">
-      <td colspan="5">
+      <td colspan="6">
         <details class="revision-details">
           <summary>
             <span class="revision-tag">атака</span>
@@ -523,7 +588,7 @@ function renderFailure(test, target, entry) {
     <details class="failure">
       <summary>
         <span class="failure-title"><span class="team-code">${esc(teamLabel(test.author))}</span> → ${esc(teamLabel(target))} · ${esc(test.name)}</span>
-        <span class="meta">${esc(reason)}</span>
+        <span class="meta">${esc(reason)} · ${formatSeconds(test.time_sec)}</span>
       </summary>
       <div class="failure-body">
         ${renderTestRevision(test, target, entry)}
@@ -536,6 +601,39 @@ function renderFailure(test, target, entry) {
         </div>
       </div>
     </details>
+  `;
+}
+
+function renderAttackerTests(attacker) {
+  const tests = (Array.isArray(attacker?.tests) ? attacker.tests : [])
+    .filter((test) => !test.skipped);
+  if (!tests.length) return '';
+  const stats = testStats(tests);
+
+  return `
+    <tr class="attack-revision-row attack-tests-row">
+      <td colspan="6">
+        <details class="revision-details">
+          <summary>
+            <span class="revision-tag">тесты</span>
+            <span>${stats.count} шт.</span>
+            <span class="muted">${formatSeconds(stats.total)} · ${formatSeconds(stats.perLine)}/строка</span>
+          </summary>
+          <div class="revision-body">
+            <ul class="test-time-list">
+              ${tests.map((test) => `
+                <li>
+                  ${outcomeBadge(test)}
+                  <code>${esc(test.name)}</code>
+                  <span class="muted">${Number(test.input_lines ?? 0)} стр.</span>
+                  <span class="test-time">${formatSeconds(test.time_sec)}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </details>
+      </td>
+    </tr>
   `;
 }
 
@@ -567,6 +665,9 @@ function renderDefense() {
       .filter((test) => !test.skipped && !test.passed)
       .forEach((test) => failures.push({ ...test, target }));
   });
+  const defenseStats = testStats(
+    attackers.flatMap((attacker) => attacker.tests || [])
+  );
 
   const rows = TEAMS.map(String)
     .filter((team) => team !== target)
@@ -575,6 +676,7 @@ function renderDefense() {
       if (!attacker) {
         return `<tr class="no-attack">
           <th scope="row">${esc(teamLabel(team))}</th>
+          <td>—</td>
           <td>—</td>
           <td>—</td>
           <td>0</td>
@@ -586,15 +688,18 @@ function renderDefense() {
       const failed = Number(attacker.failed ?? Math.max(0, total - passed));
       const statusClass = failed === 0 ? 'good' : 'bad';
       const status = failed === 0 ? 'не пробила' : 'пробила';
+      const stats = testStats(attacker.tests);
       return `
         <tr>
           <th scope="row">${esc(teamLabel(team))}</th>
           <td>${passed}/${total}</td>
           <td class="${statusClass}">${failed}</td>
+          <td class="time-cell">${formatSeconds(stats.total)}<small>${formatSeconds(stats.perLine)}/стр.</small></td>
           <td>${Number(attacker.revision ?? 0) + 1}</td>
           <td class="${statusClass}">${status}</td>
         </tr>
         ${renderAttackRevision(target, team, entry)}
+        ${renderAttackerTests(attacker)}
       `;
     }).join('');
 
@@ -622,6 +727,7 @@ function renderDefense() {
       ${metric('Попыток решения', solutionRev + 1)}
       ${metric('Попыток атаки', attackAttempts)}
       ${metric('Атакующих команд', attackers.length, `из ${TEAMS.length - 1}`)}
+      ${metric('Время тестов', formatSeconds(defenseStats.total), `${formatSeconds(defenseStats.perLine)}/строка`)}
     </div>
     ${renderSolutionDiffs(target)}
 
@@ -635,6 +741,7 @@ function renderDefense() {
             <th scope="col">Атакующая команда</th>
             <th scope="col">Пройдено</th>
             <th scope="col">Провалено</th>
+            <th scope="col">Время</th>
             <th scope="col">Попытки</th>
             <th scope="col">Итог</th>
           </tr>
