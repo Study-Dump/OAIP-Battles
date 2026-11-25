@@ -292,11 +292,13 @@ function solutionDiffs(target) {
     const before = defenseTestMap(beforeEntry);
     const after = defenseTestMap(afterEntry);
     const changes = [];
+    let added = 0;
+    let removed = 0;
 
     after.forEach((test, path) => {
       const old = before.get(path);
       if (!old) {
-        changes.push({ type: 'added', path, before: null, after: test });
+        added += 1;
         return;
       }
       if (Boolean(old.passed) !== Boolean(test.passed)) {
@@ -305,9 +307,7 @@ function solutionDiffs(target) {
     });
 
     before.forEach((test, path) => {
-      if (!after.has(path)) {
-        changes.push({ type: 'removed', path, before: test, after: null });
-      }
+      if (!after.has(path)) removed += 1;
     });
 
     changes.sort((a, b) => a.path.localeCompare(b.path));
@@ -315,6 +315,8 @@ function solutionDiffs(target) {
       from,
       to,
       changes,
+      added,
+      removed,
       beforeDefense: beforeEntry?.defense || { passed: 0, total: 0 },
       afterDefense: afterEntry?.defense || { passed: 0, total: 0 },
     });
@@ -330,24 +332,6 @@ function outcomeBadge(test) {
 }
 
 function renderSolutionChange(change) {
-  if (change.type === 'added') {
-    return `
-      <li>
-        <code>${esc(change.path)}</code>
-        <span class="muted">добавлен</span>
-        ${outcomeBadge(change.after)}
-      </li>
-    `;
-  }
-  if (change.type === 'removed') {
-    return `
-      <li>
-        <code>${esc(change.path)}</code>
-        ${outcomeBadge(change.before)}
-        <span class="muted">убран</span>
-      </li>
-    `;
-  }
   return `
     <li>
       <code>${esc(change.path)}</code>
@@ -370,6 +354,12 @@ function renderSolutionDiffs(target, compact = false) {
         ${diffs.map((diff) => {
           const before = diff.beforeDefense || {};
           const after = diff.afterDefense || {};
+          const attackChanges = diff.added || diff.removed
+            ? `<p class="muted">Набор атак изменился: +${diff.added} / −${diff.removed}. Это не изменение решения.</p>`
+            : '';
+          const resultNote = diff.changes.length
+            ? ''
+            : `<p class="muted">${attackChanges ? 'Общие тесты не изменились.' : 'Результаты тестов не изменились.'}</p>`;
           return `
             <div class="solution-diff">
               <div class="solution-diff-head">
@@ -379,7 +369,8 @@ function renderSolutionDiffs(target, compact = false) {
               </div>
               ${diff.changes.length
                 ? `<ul class="solution-diff-items">${diff.changes.map(renderSolutionChange).join('')}</ul>`
-                : '<p class="muted">Результаты тестов не изменились.</p>'}
+                : resultNote}
+              ${attackChanges}
             </div>
           `;
         }).join('')}
