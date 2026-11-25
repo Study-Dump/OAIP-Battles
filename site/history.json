@@ -657,6 +657,325 @@
       },
       "id": "attack-4-77fdd05",
       "timestamp": "2026-11-25T17:55:24.561081+00:00"
+    },
+    {
+      "mode": "attack",
+      "branch": "attack-4",
+      "commit": "1bf669c25fbeafd548933d0fc51000dc364147b4",
+      "target": "4",
+      "solution_rev": 1,
+      "attacks_rev": {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "5": 1
+      },
+      "attackers": [
+        {
+          "team": "1",
+          "passed": 5,
+          "total": 5,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "\u0000\u0001\u0002��\u0000garbage\n",
+              "expected_output": "",
+              "input_lines": 1,
+              "time_sec": 0.0016,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "01_binary_junk",
+              "path": "attacks/team1/01_binary_junk"
+            },
+            {
+              "skipped": false,
+              "input": "{\"students\": [], \"threshold\": 3.5}\n",
+              "expected_output": "",
+              "input_lines": 1,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "02_json_instead_of_rows",
+              "path": "attacks/team1/02_json_instead_of_rows"
+            },
+            {
+              "skipped": false,
+              "input": "three\n3.5\nAlice;101;4.5;2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0011,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "03_n_is_word",
+              "path": "attacks/team1/03_n_is_word"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice;101.5;4.5;2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0011,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "04_group_is_float",
+              "path": "attacks/team1/04_group_is_float"
+            },
+            {
+              "skipped": false,
+              "input": "1\n",
+              "expected_output": "",
+              "input_lines": 1,
+              "time_sec": 0.001,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "1",
+              "name": "05_missing_threshold",
+              "path": "attacks/team1/05_missing_threshold"
+            }
+          ]
+        },
+        {
+          "team": "2",
+          "passed": 5,
+          "total": 5,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice;101;high;2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.001,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "01_gpa_is_text",
+              "path": "attacks/team2/01_gpa_is_text"
+            },
+            {
+              "skipped": false,
+              "input": "1\npass\nAlice;101;4.5;2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.001,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "02_threshold_is_text",
+              "path": "attacks/team2/02_threshold_is_text"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice;101;4.5;false\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "03_missed_is_bool",
+              "path": "attacks/team2/03_missed_is_bool"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice,101,4.5,2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "04_commas_instead_of_semicolons",
+              "path": "attacks/team2/04_commas_instead_of_semicolons"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice;101;NaN;2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0013,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "2",
+              "name": "05_nan_gpa",
+              "path": "attacks/team2/05_nan_gpa"
+            }
+          ]
+        },
+        {
+          "team": "3",
+          "passed": 5,
+          "total": 5,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice\t101\t4.5\t2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "01_tabs_instead_of_semicolons",
+              "path": "attacks/team3/01_tabs_instead_of_semicolons"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice;101;4.5;2;extra\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "02_too_many_fields",
+              "path": "attacks/team3/02_too_many_fields"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice;101;4.5\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "03_too_few_fields",
+              "path": "attacks/team3/03_too_few_fields"
+            },
+            {
+              "skipped": false,
+              "input": "0\n3.0\nwhere is my data\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0011,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "04_n_zero_with_garbage",
+              "path": "attacks/team3/04_n_zero_with_garbage"
+            },
+            {
+              "skipped": false,
+              "input": "999999999\n3.0\n",
+              "expected_output": "",
+              "input_lines": 2,
+              "time_sec": 0.0011,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "3",
+              "name": "05_huge_n",
+              "path": "attacks/team3/05_huge_n"
+            }
+          ]
+        },
+        {
+          "team": "5",
+          "passed": 5,
+          "total": 5,
+          "failed": 0,
+          "revision": 1,
+          "tests": [
+            {
+              "skipped": false,
+              "input": "",
+              "expected_output": "",
+              "input_lines": 0,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "01_empty_file",
+              "path": "attacks/team5/01_empty_file"
+            },
+            {
+              "skipped": false,
+              "input": "２\n3.0\nAlice;101;4.5;2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "02_unicode_n",
+              "path": "attacks/team5/02_unicode_n"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice;-1;4.5;2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "03_negative_values",
+              "path": "attacks/team5/03_negative_values"
+            },
+            {
+              "skipped": false,
+              "input": "1\n3.0\nAlice;101;4.5;2;\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "04_extra_semicolon",
+              "path": "attacks/team5/04_extra_semicolon"
+            },
+            {
+              "skipped": false,
+              "input": "﻿1\n3.0\nAlice;101;4.5;2\n",
+              "expected_output": "",
+              "input_lines": 3,
+              "time_sec": 0.0012,
+              "actual_output": "",
+              "passed": true,
+              "reason": "ok",
+              "author": "5",
+              "name": "05_utf8_bom",
+              "path": "attacks/team5/05_utf8_bom"
+            }
+          ]
+        }
+      ],
+      "defense": {
+        "passed": 20,
+        "total": 20,
+        "ratio": 1.0,
+        "held": true
+      },
+      "id": "attack-4-1bf669c",
+      "timestamp": "2026-11-25T18:02:37.090263+00:00"
     }
   ]
 }
