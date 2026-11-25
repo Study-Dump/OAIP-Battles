@@ -1002,7 +1002,6 @@ function renderResults() {
             </ul>
           </div>
         </div>
-        <p class="attempt-note muted">Защита — своя, атака — по всем защитам.</p>
         <details class="revision-log">
           <summary>История изменений <span class="count">${history.length}</span></summary>
           ${history.length
