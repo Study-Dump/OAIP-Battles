@@ -391,7 +391,11 @@ function renderSolutionDiffs(target, compact = false) {
 function formatSeconds(value) {
   const seconds = Number(value);
   if (!Number.isFinite(seconds) || seconds <= 0) return '—';
-  if (seconds < 0.001) return `${(seconds * 1e6).toFixed(0)} мкс`;
+  if (seconds < 0.001) {
+    const microseconds = seconds * 1e6;
+    const digits = microseconds < 1 ? 2 : microseconds < 10 ? 1 : 0;
+    return `${microseconds.toFixed(digits)} мкс`;
+  }
   return seconds < 1
     ? `${(seconds * 1000).toFixed(1)} мс`
     : `${seconds.toFixed(3)} с`;
