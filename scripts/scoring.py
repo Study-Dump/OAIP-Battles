@@ -33,9 +33,16 @@ def attacker_record(entry, team):
     )
 
 
-def defense_times(entry):
+def input_lines(test):
+    value = test.get("input_lines")
+    if isinstance(value, (int, float)):
+        return max(0, int(value))
+    return len(str(test.get("input") or "").splitlines())
+
+
+def defense_samples(entry):
     return [
-        test["time_sec"]
+        (test["time_sec"], input_lines(test))
         for attacker in (entry or {}).get("attackers") or []
         for test in attacker.get("tests") or []
         if isinstance(test.get("time_sec"), (int, float))
@@ -89,6 +96,7 @@ def build_scoreboard(history, config=None):
             "attack_attempts": {},
             "attack_revs": 0,
             "avg_time": None,
+            "time_per_line": None,
             "speed_quality": 0.0,
             "score": 0.0,
         }
@@ -132,15 +140,22 @@ def build_scoreboard(history, config=None):
             attempt["failed"] += failed
             attempt["total"] += tests
 
-        team_stats[target].setdefault("_defense_times", []).extend(defense_times(entry))
+        team_stats[target].setdefault("_defense_samples", []).extend(defense_samples(entry))
 
-    avg_times = []
+    fastest = None
     for stats in team_stats.values():
-        times = stats.pop("_defense_times", [])
+        samples = stats.pop("_defense_samples", [])
+        times = [time_sec for time_sec, _ in samples]
+        total_time = sum(times)
+        total_lines = sum(lines for _, lines in samples)
         stats["avg_time"] = mean(times) if times else None
-        if stats["avg_time"] is not None and stats["avg_time"] > 0:
-            avg_times.append(stats["avg_time"])
-    fastest = min(avg_times) if avg_times else None
+        stats["time_per_line"] = (
+            total_time / max(1, total_lines) if samples and total_time > 0 else None
+        )
+        if stats["time_per_line"] is not None and (
+            fastest is None or stats["time_per_line"] < fastest
+        ):
+            fastest = stats["time_per_line"]
 
     for target in sorted(latest, key=lambda item: order.get(item, len(order))):
         entry = latest[target]
@@ -235,8 +250,10 @@ def build_scoreboard(history, config=None):
             if stats["attack_total"]
             else 0.0
         )
-        avg = stats["avg_time"]
-        stats["speed_quality"] = min(1.0, fastest / avg) if avg and fastest else 0.0
+        per_line = stats["time_per_line"]
+        stats["speed_quality"] = (
+            min(1.0, fastest / per_line) if per_line and fastest else 0.0
+        )
         stats["score"] = round(
             weights["defense"] * stats["defense_quality"]
             + weights["attack"] * stats["attack_quality"]
@@ -258,6 +275,11 @@ def build_scoreboard(history, config=None):
                 "attack_coverage": round(stats["attack_coverage"], 4),
                 "attack_ratio": round(stats["attack_ratio"], 4),
                 "avg_time": round(stats["avg_time"], 4) if stats["avg_time"] is not None else None,
+                "time_per_line": (
+                    round(stats["time_per_line"], 8)
+                    if stats["time_per_line"] is not None
+                    else None
+                ),
                 "speed_quality": round(stats["speed_quality"], 4),
                 "defense_attempts": [
                     {

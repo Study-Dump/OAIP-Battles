@@ -48,6 +48,7 @@ def run_test(solution, test_dir, timeout_sec=TIMEOUT_SEC):
         "skipped": False,
         "input": input_content[:OUTPUT_LIMIT],
         "expected_output": expected[:OUTPUT_LIMIT],
+        "input_lines": len(input_content.splitlines()),
     }
 
     with tempfile.TemporaryDirectory() as tmp:
