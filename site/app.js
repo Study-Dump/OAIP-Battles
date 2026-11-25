@@ -342,6 +342,7 @@ function renderSolutionDiffs(target, compact = false) {
 function formatSeconds(value) {
   const seconds = Number(value);
   if (!Number.isFinite(seconds) || seconds <= 0) return '—';
+  if (seconds < 0.001) return `${(seconds * 1e6).toFixed(0)} мкс`;
   return seconds < 1
     ? `${(seconds * 1000).toFixed(1)} мс`
     : `${seconds.toFixed(3)} с`;
@@ -836,6 +837,7 @@ function renderResults() {
       .sort((a, b) => teamIndex(a.target) - teamIndex(b.target) || Number(a.revision) - Number(b.revision));
     const attemptLabel = (revision) => `попытка ${Number(revision ?? 0) + 1}`;
     const speedValue = formatSeconds(team.avg_time);
+    const speedPerLine = formatSeconds(team.time_per_line);
     return `
       <article class="result-card ${isWinner ? 'winner' : ''}">
         <div class="result-top">
@@ -863,7 +865,7 @@ function renderResults() {
           <div>
             <span>Скорость</span>
             <strong>${speedQuality}%</strong>
-            <small>${speedValue} среднее · 20% балла</small>
+            <small>${speedValue} · ${speedPerLine}/строка · 20% балла</small>
           </div>
           <div>
             <span>Попыток решения / атак</span>
