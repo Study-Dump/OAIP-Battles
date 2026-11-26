@@ -112,14 +112,14 @@ bool parse_double_fast(std::string_view sv, double& out) {
     errno = 0;
     char* end = nullptr;
     double val = std::strtod(buf, &end);
-    if (errno == ERANGE || end != buf + sv.size() || !std::isfinite(val)) return false;
+    if (end != buf + sv.size() || !std::isfinite(val)) return false;
     out = val;
     return true;
 }
 
 bool forbidden_codepoint(unsigned cp) {
     if (cp < 0x20 || (cp >= 0x7F && cp <= 0x9F)) return true;
-    if (cp == 0x00AD || cp == 0x061C || cp == 0x180E || cp == 0xFEFF || cp == 0xFFFD) return true;
+    if (cp == 0x00AD || cp == 0x034F || cp == 0x061C || cp == 0x180E || cp == 0xFEFF || cp == 0xFFFD) return true;
     if (cp >= 0x200B && cp <= 0x200F) return true;
     if (cp >= 0x2028 && cp <= 0x202E) return true;
     if (cp >= 0x2060 && cp <= 0x206F) return true;
@@ -128,59 +128,117 @@ bool forbidden_codepoint(unsigned cp) {
     return false;
 }
 
+bool is_combining_mark(unsigned cp) {
+    return (cp >= 0x0300 && cp <= 0x036F) ||
+           (cp >= 0x0483 && cp <= 0x0489) ||
+           (cp >= 0x1AB0 && cp <= 0x1AFF) ||
+           (cp >= 0x1DC0 && cp <= 0x1DFF) ||
+           (cp >= 0x20D0 && cp <= 0x20FF) ||
+           (cp >= 0xFE20 && cp <= 0xFE2F);
+}
+
+bool is_emoji(unsigned cp) {
+    return (cp >= 0x1F000 && cp <= 0x1FAFF) ||
+           (cp >= 0x2600 && cp <= 0x27BF) ||
+           cp == 0x00A9 || cp == 0x00AE || cp == 0x203C || cp == 0x2049 ||
+           cp == 0x2122 || cp == 0x2139 || cp == 0x3030 || cp == 0x303D ||
+           cp == 0x3297 || cp == 0x3299;
+}
+
+bool decode_cp(std::string_view sv, size_t pos, unsigned& cp, size_t& len) {
+    if (pos >= sv.size()) return false;
+    unsigned char c = static_cast<unsigned char>(sv[pos]);
+    if (c < 0x80) {
+        len = 1;
+        cp = c;
+        return true;
+    }
+    unsigned char lo = 0x80, hi = 0xBF;
+    if (c >= 0xC2 && c <= 0xDF) {
+        len = 2;
+    } else if (c >= 0xE0 && c <= 0xEF) {
+        len = 3;
+        if (c == 0xE0) lo = 0xA0;
+        else if (c == 0xED) hi = 0x9F;
+    } else if (c >= 0xF0 && c <= 0xF4) {
+        len = 4;
+        if (c == 0xF0) lo = 0x90;
+        else if (c == 0xF4) hi = 0x8F;
+    } else {
+        return false;
+    }
+    if (pos + len > sv.size()) return false;
+    for (size_t j = 1; j < len; ++j) {
+        unsigned char cc = static_cast<unsigned char>(sv[pos + j]);
+        if (j == 1) {
+            if (cc < lo || cc > hi) return false;
+        } else if (cc < 0x80 || cc > 0xBF) {
+            return false;
+        }
+    }
+    if (len == 2) {
+        cp = (static_cast<unsigned>(c & 0x1F) << 6) |
+             (static_cast<unsigned char>(sv[pos + 1]) & 0x3F);
+    } else if (len == 3) {
+        cp = (static_cast<unsigned>(c & 0x0F) << 12) |
+             ((static_cast<unsigned char>(sv[pos + 1]) & 0x3F) << 6) |
+             (static_cast<unsigned char>(sv[pos + 2]) & 0x3F);
+    } else {
+        cp = (static_cast<unsigned>(c & 0x07) << 18) |
+             ((static_cast<unsigned char>(sv[pos + 1]) & 0x3F) << 12) |
+             ((static_cast<unsigned char>(sv[pos + 2]) & 0x3F) << 6) |
+             (static_cast<unsigned char>(sv[pos + 3]) & 0x3F);
+    }
+    return true;
+}
+
 bool valid_name(std::string_view sv) {
     size_t chars = 0;
     size_t i = 0;
+    bool prev_emoji = false;
     while (i < sv.size()) {
-        unsigned char c = static_cast<unsigned char>(sv[i]);
-        if (c < 0x20) return false;
+        unsigned cp;
         size_t len;
-        unsigned char lo = 0x80, hi = 0xBF;
-        if (c < 0x80) {
-            len = 1;
-        } else if (c >= 0xC2 && c <= 0xDF) {
-            len = 2;
-        } else if (c >= 0xE0 && c <= 0xEF) {
-            len = 3;
-            if (c == 0xE0) lo = 0xA0;
-            else if (c == 0xED) hi = 0x9F;
-        } else if (c >= 0xF0 && c <= 0xF4) {
-            len = 4;
-            if (c == 0xF0) lo = 0x90;
-            else if (c == 0xF4) hi = 0x8F;
+        if (!decode_cp(sv, i, cp, len)) return false;
+
+        if (cp == 0x200D) {
+            unsigned next_cp;
+            size_t next_len;
+            if (!prev_emoji || !decode_cp(sv, i + len, next_cp, next_len) || !is_emoji(next_cp)) {
+                return false;
+            }
         } else {
-            return false;
-        }
-        if (i + len > sv.size()) return false;
-        for (size_t j = 1; j < len; ++j) {
-            unsigned char cc = static_cast<unsigned char>(sv[i + j]);
-            if (j == 1) {
-                if (cc < lo || cc > hi) return false;
-            } else if (cc < 0x80 || cc > 0xBF) {
+            if (forbidden_codepoint(cp)) return false;
+            if (is_combining_mark(cp)) {
+                if (chars == 0) return false;
+            } else if (++chars > 40) {
                 return false;
             }
         }
-        unsigned cp;
-        if (len == 1) {
-            cp = c;
-        } else if (len == 2) {
-            cp = (static_cast<unsigned>(c & 0x1F) << 6) |
-                 (static_cast<unsigned char>(sv[i + 1]) & 0x3F);
-        } else if (len == 3) {
-            cp = (static_cast<unsigned>(c & 0x0F) << 12) |
-                 ((static_cast<unsigned char>(sv[i + 1]) & 0x3F) << 6) |
-                 (static_cast<unsigned char>(sv[i + 2]) & 0x3F);
-        } else {
-            cp = (static_cast<unsigned>(c & 0x07) << 18) |
-                 ((static_cast<unsigned char>(sv[i + 1]) & 0x3F) << 12) |
-                 ((static_cast<unsigned char>(sv[i + 2]) & 0x3F) << 6) |
-                 (static_cast<unsigned char>(sv[i + 3]) & 0x3F);
-        }
-        if (forbidden_codepoint(cp)) return false;
+        prev_emoji = is_emoji(cp);
         i += len;
-        if (++chars > 40) return false;
     }
     return chars > 0;
+}
+
+unsigned collate_rank(unsigned cp) {
+    if (cp == 0x0401) return 0x0415u * 2u + 1u;
+    if (cp == 0x0451) return 0x0435u * 2u + 1u;
+    return cp * 2u;
+}
+
+bool name_less(std::string_view a, std::string_view b) {
+    size_t i = 0, j = 0;
+    while (i < a.size() && j < b.size()) {
+        unsigned ca, cb;
+        size_t la, lb;
+        if (!decode_cp(a, i, ca, la) || !decode_cp(b, j, cb, lb)) return a < b;
+        unsigned ra = collate_rank(ca), rb = collate_rank(cb);
+        if (ra != rb) return ra < rb;
+        i += la;
+        j += lb;
+    }
+    return i == a.size() && j != b.size();
 }
 
 bool next_line(std::string_view& data, std::string_view& line) {
@@ -273,7 +331,7 @@ static int run() {
         int group = 0, missed = 0;
         double gpa = 0.0;
         if (!parse_int_fast(line.substr(p1 + 1, p2 - p1 - 1), group) || group < 0) return 0;
-        if (!parse_double_fast(line.substr(p2 + 1, p3 - p2 - 1), gpa) || gpa < 0.0) return 0;
+        if (!parse_double_fast(line.substr(p2 + 1, p3 - p2 - 1), gpa) || gpa < 0.0 || gpa > 10.0) return 0;
         if (!parse_int_fast(line.substr(p3 + 1), missed) || missed < 0) return 0;
 
         if (gpa == 0.0) gpa = 0.0;  // убираем отрицательный ноль
@@ -286,7 +344,7 @@ static int run() {
 
     std::stable_sort(students.begin(), students.end(), [](const Student& a, const Student& b) {
         if (a.gpa != b.gpa) return a.gpa > b.gpa;
-        return a.full_name < b.full_name;
+        return name_less(a.full_name, b.full_name);
     });
 
     FILE* out = std::fopen("output.txt", "wb");
