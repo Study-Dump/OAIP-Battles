@@ -117,14 +117,39 @@ bool parse_double_fast(std::string_view sv, double& out) {
     return true;
 }
 
+// Запрещённые в ФИО символы: все управляющие (Cc) и форматные (Cf) символы Unicode, разделители
+// строк, суррогаты, private use, невидимые «заполнители» (U+3164, U+2800, ...), селекторы
+// вариантов, не-символы и U+FFFD (им CI заменяет битые байты).
+// Сгенерировано из Unicode 15.1.0: Cc, Cf, Cs, Co, Zl, Zp + невидимые заполнители,
+// селекторы вариантов, не-символы, U+FFFC/U+FFFD. Отсортировано, без пересечений.
+static const unsigned kForbidden[][2] = {
+    {0x0, 0x1F}, {0x7F, 0x9F}, {0xAD, 0xAD}, {0x34F, 0x34F},
+    {0x600, 0x605}, {0x61C, 0x61C}, {0x6DD, 0x6DD}, {0x70F, 0x70F},
+    {0x890, 0x891}, {0x8E2, 0x8E2}, {0x115F, 0x1160}, {0x180B, 0x180F},
+    {0x200B, 0x200F}, {0x2028, 0x202E}, {0x2060, 0x2064}, {0x2066, 0x206F},
+    {0x2800, 0x2800}, {0x3164, 0x3164}, {0xD800, 0xF8FF}, {0xFDD0, 0xFDEF},
+    {0xFE00, 0xFE0F}, {0xFEFF, 0xFEFF}, {0xFFA0, 0xFFA0}, {0xFFF9, 0xFFFF},
+    {0x110BD, 0x110BD}, {0x110CD, 0x110CD}, {0x13430, 0x1343F}, {0x1BCA0, 0x1BCA3},
+    {0x1D173, 0x1D17A}, {0x1FFFE, 0x1FFFF}, {0x2FFFE, 0x2FFFF}, {0x3FFFE, 0x3FFFF},
+    {0x4FFFE, 0x4FFFF}, {0x5FFFE, 0x5FFFF}, {0x6FFFE, 0x6FFFF}, {0x7FFFE, 0x7FFFF},
+    {0x8FFFE, 0x8FFFF}, {0x9FFFE, 0x9FFFF}, {0xAFFFE, 0xAFFFF}, {0xBFFFE, 0xBFFFF},
+    {0xCFFFE, 0xCFFFF}, {0xDFFFE, 0xE0FFF}, {0xEFFFE, 0x10FFFF},
+};
+static const unsigned kSpaces[] = {0x20, 0xA0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x202F, 0x205F, 0x3000};  // категория Zs
+
 bool forbidden_codepoint(unsigned cp) {
-    if (cp < 0x20 || (cp >= 0x7F && cp <= 0x9F)) return true;
-    if (cp == 0x00AD || cp == 0x034F || cp == 0x061C || cp == 0x180E || cp == 0xFEFF || cp == 0xFFFD) return true;
-    if (cp >= 0x200B && cp <= 0x200F) return true;
-    if (cp >= 0x2028 && cp <= 0x202E) return true;
-    if (cp >= 0x2060 && cp <= 0x206F) return true;
-    if (cp >= 0xFE00 && cp <= 0xFE0F) return true;
-    if (cp >= 0xFFF9 && cp <= 0xFFFB) return true;
+    size_t lo = 0, hi = sizeof(kForbidden) / sizeof(kForbidden[0]);
+    while (lo < hi) {
+        size_t mid = (lo + hi) / 2;
+        if (cp < kForbidden[mid][0]) hi = mid;
+        else if (cp > kForbidden[mid][1]) lo = mid + 1;
+        else return true;
+    }
+    return false;
+}
+
+bool is_space_cp(unsigned cp) {
+    for (unsigned z : kSpaces) if (z == cp) return true;
     return false;
 }
 
@@ -196,6 +221,7 @@ bool valid_name(std::string_view sv) {
     size_t chars = 0;
     size_t i = 0;
     bool prev_emoji = false;
+    bool has_visible = false;
     while (i < sv.size()) {
         unsigned cp;
         size_t len;
@@ -214,11 +240,12 @@ bool valid_name(std::string_view sv) {
             } else if (++chars > 40) {
                 return false;
             }
+            if (!is_space_cp(cp)) has_visible = true;
         }
         prev_emoji = is_emoji(cp);
         i += len;
     }
-    return chars > 0;
+    return chars > 0 && has_visible;
 }
 
 unsigned collate_rank(unsigned cp) {
@@ -228,17 +255,15 @@ unsigned collate_rank(unsigned cp) {
 }
 
 bool name_less(std::string_view a, std::string_view b) {
-    size_t i = 0, j = 0;
-    while (i < a.size() && j < b.size()) {
-        unsigned ca, cb;
-        size_t la, lb;
-        if (!decode_cp(a, i, ca, la) || !decode_cp(b, j, cb, lb)) return a < b;
-        unsigned ra = collate_rank(ca), rb = collate_rank(cb);
-        if (ra != rb) return ra < rb;
-        i += la;
-        j += lb;
-    }
-    return i == a.size() && j != b.size();
+    size_t n = a.size() < b.size() ? a.size() : b.size();
+    size_t k = 0;
+    while (k < n && a[k] == b[k]) ++k;                  // общий префикс
+    if (k == n) return a.size() < b.size();             // один — префикс другого: короче раньше
+    while (k > 0 && (static_cast<unsigned char>(a[k]) & 0xC0u) == 0x80u) --k;  // к началу символа
+    unsigned ca, cb;
+    size_t la, lb;
+    if (!decode_cp(a, k, ca, la) || !decode_cp(b, k, cb, lb)) return a < b;
+    return collate_rank(ca) < collate_rank(cb);
 }
 
 bool next_line(std::string_view& data, std::string_view& line) {
@@ -340,7 +365,11 @@ static int run() {
         }
     }
 
-    if (!cursor.empty()) return 0;
+    // после N записей допускаются только пустые строки (частый перевод строки в конце файла);
+    // любая непустая строка, даже из пробелов, — мусор
+    while (next_line(cursor, line)) {
+        if (!line.empty()) return 0;
+    }
 
     std::stable_sort(students.begin(), students.end(), [](const Student& a, const Student& b) {
         if (a.gpa != b.gpa) return a.gpa > b.gpa;
