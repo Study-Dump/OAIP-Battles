@@ -82,7 +82,10 @@ bool parse_int_fast(std::string_view sv, int& out) {
     for (char c : sv) {
         if (c == ' ' || c == '\t' || c == '\r' || c == '\n') return false;
     }
-    if (sv.front() == '+') return false;
+    if (sv.front() == '+') {
+        sv.remove_prefix(1);
+        if (sv.empty()) return false;
+    }
     auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), out);
     return ec == std::errc() && ptr == sv.data() + sv.size();
 }
@@ -241,9 +244,12 @@ static int run() {
     int n = 0;
     if (!parse_int_fast(line, n) || n < 0) return 0;
 
-    if (!next_line(cursor, line)) return 0;
     double threshold = 0.0;
-    if (!parse_double_fast(line, threshold)) return 0;
+    if (next_line(cursor, line)) {
+        if (!parse_double_fast(line, threshold)) return 0;
+    } else if (n != 0) {
+        return 0;
+    }
 
     if (static_cast<size_t>(n) > file_bytes / 6 + 1) return 0;
 
@@ -275,6 +281,8 @@ static int run() {
             students.push_back(Student{name_sv, group, gpa, missed});
         }
     }
+
+    if (!cursor.empty()) return 0;
 
     std::stable_sort(students.begin(), students.end(), [](const Student& a, const Student& b) {
         if (a.gpa != b.gpa) return a.gpa > b.gpa;
